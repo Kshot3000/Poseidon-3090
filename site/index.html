@@ -139,9 +139,84 @@
       box-shadow: 0 0 12px rgba(55, 213, 184, 0.6);
       cursor: pointer;
     }
+
+    /* ===== v3: living water, gold flakes, statue, ocean floor ===== */
+    .water-flow {
+      position: fixed; inset: -12%; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 55% 38% at 22% 18%, rgba(23, 107, 143, 0.35), transparent 70%),
+        radial-gradient(ellipse 48% 34% at 78% 30%, rgba(11, 61, 92, 0.5), transparent 70%),
+        radial-gradient(ellipse 60% 40% at 55% 82%, rgba(29, 158, 135, 0.13), transparent 70%);
+      animation: waterFlow 26s ease-in-out infinite alternate;
+    }
+    @keyframes waterFlow {
+      0% { transform: translate3d(-2.5%, -1.5%, 0) scale(1); }
+      50% { transform: translate3d(2%, 2.5%, 0) scale(1.05); }
+      100% { transform: translate3d(-1%, 3.5%, 0) scale(1.02); }
+    }
+    .caustics {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.5;
+      background-image:
+        radial-gradient(circle at 12% 22%, rgba(120, 220, 255, 0.05) 0 34px, transparent 70px),
+        radial-gradient(circle at 68% 12%, rgba(120, 220, 255, 0.04) 0 26px, transparent 60px),
+        radial-gradient(circle at 42% 58%, rgba(55, 213, 184, 0.035) 0 40px, transparent 84px),
+        radial-gradient(circle at 86% 66%, rgba(120, 220, 255, 0.04) 0 30px, transparent 66px);
+      background-size: 640px 640px, 520px 520px, 760px 760px, 580px 580px;
+      animation: causticDrift 34s linear infinite;
+    }
+    @keyframes causticDrift {
+      from { background-position: 0 0, 0 0, 0 0, 0 0; }
+      to { background-position: 640px 320px, -520px 260px, 380px -760px, -290px -580px; }
+    }
+    #goldCanvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+    body > nav, body > header, body > main, body > footer { position: relative; z-index: 2; }
+
+    .statue-bg {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; object-position: center 26%;
+      animation: statueBreathe 44s ease-in-out infinite alternate;
+    }
+    @keyframes statueBreathe { from { transform: scale(1); } to { transform: scale(1.07); } }
+    .statue-shade {
+      position: absolute; inset: 0; pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(4, 20, 31, 0.92) 0%, rgba(4, 20, 31, 0.72) 42%, rgba(4, 20, 31, 0.28) 75%, rgba(4, 20, 31, 0.45) 100%),
+        linear-gradient(180deg, rgba(4, 20, 31, 0.35) 0%, transparent 30%, transparent 62%, rgba(4, 20, 31, 0.92) 100%);
+    }
+
+    .seafloor {
+      position: relative; border-radius: 1rem; overflow: hidden;
+      border: 1px solid rgba(55, 213, 184, 0.18);
+      background: linear-gradient(180deg, rgba(7, 41, 61, 0.25) 0%, rgba(7, 41, 61, 0.5) 46%, #0a2e33 62%, #123b36 78%, #1a463c 100%);
+      min-height: 240px;
+    }
+    .seafloor-sand {
+      position: absolute; left: 0; right: 0; bottom: 0; height: 74px;
+      background: radial-gradient(ellipse 90% 130% at 50% 115%, #8a7a52 0%, #5d5136 42%, rgba(38, 44, 32, 0) 78%);
+      opacity: 0.85;
+    }
+    .pearl-glow {
+      position: absolute; border-radius: 9999px;
+      background: radial-gradient(circle at 34% 30%, #ffffff 0%, #eaffeF 30%, #a7f3ea 62%, #37d5b8 100%);
+      box-shadow: 0 0 14px 4px rgba(94, 234, 212, 0.55), 0 0 44px 12px rgba(55, 213, 184, 0.28);
+      animation: pearlPulse 3.8s ease-in-out infinite;
+    }
+    @keyframes pearlPulse {
+      0%, 100% { box-shadow: 0 0 12px 3px rgba(94, 234, 212, 0.45), 0 0 36px 10px rgba(55, 213, 184, 0.22); }
+      50% { box-shadow: 0 0 20px 7px rgba(94, 234, 212, 0.75), 0 0 60px 18px rgba(55, 213, 184, 0.4); }
+    }
+    .oyster { position: absolute; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.45)); }
+    .oyster .oyster-pearl { animation: pearlPulse 4.4s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .water-flow, .caustics, .statue-bg, .pearl-glow, .pearl-orb { animation: none !important; }
+    }
   </style>
 </head>
 <body class="ocean-bg min-h-screen antialiased selection:bg-foam/30 selection:text-pearl">
+  <div class="water-flow" aria-hidden="true"></div>
+  <div class="caustics" aria-hidden="true"></div>
+  <canvas id="goldCanvas" aria-hidden="true"></canvas>
 
   <!-- Sticky Navigation -->
   <nav class="sticky top-0 z-50 border-b border-foam/15 bg-abyss/80 backdrop-blur-md">
@@ -161,6 +236,7 @@
         <a href="#architecture" class="hover:text-foam transition">Architecture</a>
         <a href="#dev-fee" class="hover:text-foam transition">Dev Fee</a>
         <a href="#roadmap" class="hover:text-foam transition">Roadmap</a>
+        <a href="#ocean-floor" class="hover:text-foam transition">Ocean Floor</a>
       </div>
 
       <div class="flex items-center gap-2.5">
@@ -186,12 +262,15 @@
       <a href="#architecture" class="block py-1.5 text-muted hover:text-foam">Architecture</a>
       <a href="#dev-fee" class="block py-1.5 text-muted hover:text-foam">Dev Fee</a>
       <a href="#roadmap" class="block py-1.5 text-muted hover:text-foam">Roadmap</a>
+      <a href="#ocean-floor" class="block py-1.5 text-muted hover:text-foam">Ocean Floor</a>
     </div>
   </nav>
 
   <!-- Hero Section -->
   <header id="top" class="relative overflow-hidden border-b border-foam/10">
     <div class="grid-mesh absolute inset-0 pointer-events-none"></div>
+    <img src="assets/poseidon-statue.webp" alt="Digital statue of Poseidon on the ocean floor, golden trident in hand, oysters with glowing pearls at his feet" class="statue-bg" />
+    <div class="statue-shade"></div>
 
     <div class="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
       <div class="grid items-center gap-12 lg:grid-cols-12">
@@ -228,31 +307,15 @@
           </div>
         </div>
 
-        <!-- Right Visual Emblem + Target Telemetry Card -->
-        <div class="lg:col-span-5 flex flex-col items-center">
-          <div class="relative flex h-64 w-64 sm:h-72 sm:w-72 items-center justify-center">
-            <!-- Outer orbital ring -->
-            <div class="absolute inset-2 rounded-full border border-dashed border-foam/25 animate-[spin_28s_linear_infinite]"></div>
-            <div class="absolute inset-8 rounded-full border border-foam/15"></div>
-
-            <!-- Pearl Orb -->
-            <div class="pearl-orb relative flex h-32 w-32 sm:h-36 sm:w-36 items-center justify-center rounded-full">
-              <!-- Trident overlay -->
-              <svg class="h-14 w-14 text-abyss/80 drop-shadow-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M12 2v20M5 7v2a7 7 0 0 0 14 0V7M5 7l-1.5 1.5M5 7l1.5 1.5M19 7l-1.5 1.5M19 7l1.5 1.5M12 2l-1.5 2M12 2l1.5 2" />
-              </svg>
-            </div>
-
-            <!-- Floating Target Chips -->
-            <div class="glass-card absolute -top-1 right-0 rounded-xl px-3.5 py-2 text-right">
-              <div class="text-[11px] uppercase tracking-wider text-muted">Target Hashrate</div>
-              <div class="font-mono text-base font-semibold text-foam">&ge; 125 TH/s</div>
-            </div>
-
-            <div class="glass-card absolute bottom-1 left-0 rounded-xl px-3.5 py-2">
-              <div class="text-[11px] uppercase tracking-wider text-muted">Target Power</div>
-              <div class="font-mono text-base font-semibold text-pearl">&le; 320 W</div>
-            </div>
+        <!-- Right: floating target chips over the statue -->
+        <div class="lg:col-span-5 relative hidden lg:block" style="min-height: 320px;">
+          <div class="glass-card absolute top-2 right-2 rounded-xl px-3.5 py-2 text-right">
+            <div class="text-[11px] uppercase tracking-wider text-muted">Target Hashrate</div>
+            <div class="font-mono text-base font-semibold text-foam">&ge; 125 TH/s</div>
+          </div>
+          <div class="glass-card absolute bottom-2 left-2 rounded-xl px-3.5 py-2">
+            <div class="text-[11px] uppercase tracking-wider text-muted">Target Power</div>
+            <div class="font-mono text-base font-semibold text-pearl">&le; 320 W</div>
           </div>
         </div>
       </div>
@@ -542,6 +605,49 @@
       </div>
     </section>
 
+
+    <!-- Ocean Floor Section -->
+    <section id="ocean-floor" class="scroll-mt-24 space-y-6">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-widest text-foam">The Ocean Floor</p>
+        <h2 class="mt-1 font-serif text-3xl sm:text-4xl text-pearl">Where the pearls are</h2>
+        <p class="mt-3 max-w-2xl text-sm sm:text-base leading-relaxed text-muted">
+          Every Pearl (PRL) block starts down here — in the dark, under pressure, inside an oyster.
+          Poseidon 3090 is built to crack them open: one architecture, one algorithm, nothing else.
+          The pearls on this floor glow because the work is the point — measured pool-side, in the open, or it doesn't count.
+        </p>
+      </div>
+      <div class="seafloor" aria-hidden="true">
+        <div class="seafloor-sand"></div>
+        <div class="oyster" style="left: 6%; bottom: 26px; width: 128px;"><svg viewBox="0 0 120 92" fill="none" aria-hidden="true">
+            <path d="M8 66 Q14 34 52 26 Q92 18 112 58 Q96 52 60 54 Q26 56 8 66Z" fill="#31505c"/>
+            <path d="M14 64 Q30 40 60 36 Q94 32 106 56 Q88 50 60 52 Q32 54 14 64Z" fill="#52707c"/>
+            <path d="M6 68 Q30 84 62 84 Q96 84 114 64 Q92 76 60 76 Q28 76 6 68Z" fill="#22333d"/>
+            <path d="M16 70 Q34 80 62 80 Q92 80 106 68 Q88 74 60 74 Q32 74 16 70Z" fill="#6d5840"/>
+            <circle class="oyster-pearl" cx="60" cy="58" r="11" fill="#f8feF9" style="filter: drop-shadow(0 0 9px rgba(94,234,212,0.95));"/>
+          </svg></div>
+        <div class="oyster" style="left: 44%; bottom: 14px; width: 168px;"><svg viewBox="0 0 120 92" fill="none" aria-hidden="true">
+            <path d="M8 66 Q14 34 52 26 Q92 18 112 58 Q96 52 60 54 Q26 56 8 66Z" fill="#31505c"/>
+            <path d="M14 64 Q30 40 60 36 Q94 32 106 56 Q88 50 60 52 Q32 54 14 64Z" fill="#52707c"/>
+            <path d="M6 68 Q30 84 62 84 Q96 84 114 64 Q92 76 60 76 Q28 76 6 68Z" fill="#22333d"/>
+            <path d="M16 70 Q34 80 62 80 Q92 80 106 68 Q88 74 60 74 Q32 74 16 70Z" fill="#6d5840"/>
+            <circle class="oyster-pearl" cx="60" cy="58" r="11" fill="#f8feF9" style="filter: drop-shadow(0 0 9px rgba(94,234,212,0.95));"/>
+          </svg></div>
+        <div class="oyster" style="right: 7%; bottom: 30px; width: 118px;"><svg viewBox="0 0 120 92" fill="none" aria-hidden="true">
+            <path d="M8 66 Q14 34 52 26 Q92 18 112 58 Q96 52 60 54 Q26 56 8 66Z" fill="#31505c"/>
+            <path d="M14 64 Q30 40 60 36 Q94 32 106 56 Q88 50 60 52 Q32 54 14 64Z" fill="#52707c"/>
+            <path d="M6 68 Q30 84 62 84 Q96 84 114 64 Q92 76 60 76 Q28 76 6 68Z" fill="#22333d"/>
+            <path d="M16 70 Q34 80 62 80 Q92 80 106 68 Q88 74 60 74 Q32 74 16 70Z" fill="#6d5840"/>
+            <circle class="oyster-pearl" cx="60" cy="58" r="11" fill="#f8feF9" style="filter: drop-shadow(0 0 9px rgba(94,234,212,0.95));"/>
+          </svg></div>
+        <span class="pearl-glow" style="left: 26%; bottom: 30px; width: 15px; height: 15px;"></span>
+        <span class="pearl-glow" style="left: 33%; bottom: 58px; width: 10px; height: 10px; animation-delay: 0.9s;"></span>
+        <span class="pearl-glow" style="left: 63%; bottom: 24px; width: 12px; height: 12px; animation-delay: 1.7s;"></span>
+        <span class="pearl-glow" style="left: 71%; bottom: 64px; width: 9px; height: 9px; animation-delay: 0.5s;"></span>
+        <span class="pearl-glow" style="left: 86%; bottom: 88px; width: 11px; height: 11px; animation-delay: 2.3s;"></span>
+        <span class="pearl-glow" style="left: 14%; bottom: 96px; width: 8px; height: 8px; animation-delay: 1.2s;"></span>
+      </div>
+    </section>
   </main>
 
   <!-- Footer -->
@@ -632,6 +738,50 @@
         gpuSlider.addEventListener('input', updateRigPreview);
         updateRigPreview();
       }
+
+      // Gold flakes drifting through the water (v3)
+      (function () {
+        const canvas = document.getElementById('goldCanvas');
+        if (!canvas || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const ctx = canvas.getContext('2d');
+        let w, h, flakes;
+        function resize() {
+          w = canvas.width = window.innerWidth;
+          h = canvas.height = window.innerHeight;
+        }
+        function make() {
+          const n = Math.min(90, Math.floor(window.innerWidth / 16));
+          flakes = Array.from({ length: n }, function () {
+            return {
+              x: Math.random() * w, y: Math.random() * h,
+              r: 0.8 + Math.random() * 2.1,
+              vy: 0.12 + Math.random() * 0.35,
+              vx: -0.08 + Math.random() * 0.16,
+              ph: Math.random() * Math.PI * 2,
+              ps: 0.008 + Math.random() * 0.02
+            };
+          });
+        }
+        function tick() {
+          ctx.clearRect(0, 0, w, h);
+          for (const f of flakes) {
+            f.y += f.vy; f.x += f.vx + Math.sin(f.ph) * 0.12; f.ph += f.ps;
+            if (f.y > h + 6) { f.y = -6; f.x = Math.random() * w; }
+            if (f.x < -6) f.x = w + 6; if (f.x > w + 6) f.x = -6;
+            const a = 0.25 + 0.55 * (0.5 + 0.5 * Math.sin(f.ph * 2));
+            ctx.beginPath();
+            ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(232, 179, 75, ' + a.toFixed(3) + ')';
+            ctx.shadowColor = 'rgba(232, 179, 75, 0.8)';
+            ctx.shadowBlur = 6;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+          }
+          requestAnimationFrame(tick);
+        }
+        resize(); make(); tick();
+        window.addEventListener('resize', function () { resize(); make(); });
+      })();
     })();
   </script>
 </body>
