@@ -14,6 +14,11 @@ Status key: `queued` · `claimed` · `in progress` · `in review` · `done` · `
 | GEMINI-1 | Short summary of `docs/AUDIT` material in OysterRig relevant to 3090-only design (one page max) | Gemini | queued | Small one-off, free-tier sized |
 | HERMES-1 | Rig recon + first hardware benches: SRBMiner v3.8.4 + OneZeroMiner baselines per `docs/BENCH.md` on her 3090 | Hermes | queued | Kyle resumed Hermes for Poseidon on 2026-11-26; packet: `council/feed/HERMES_NEXT_FEED.md`, start prompt: `council/feed/HERMES_START_PROMPT.md` |
 
+## Standing order — daily improvement (Kyle, 2026-11-26)
+Higher hashrate, lower power draw, everything better, improved daily. The
+target below is a floor, not a ceiling; every verified bench updates the
+scoreboard and names the next tuning step.
+
 ## Scoreboard
 - Target: ≥125 TH/s @ ≤320 W pool-side, after the 2% fee, on Kyle's OC (≥391 GH/W).
 - Verified Poseidon hashrate: **none yet — no claim.**
