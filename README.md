@@ -79,8 +79,6 @@ Pearl team: [@pearl-research-labs](https://github.com/pearl-research-labs)
 Dev fee: **2%**, paid to (PRL):
 `prl1pvrhfx8g8dpqcj3pp9782ykf8gyff4qwhzz7mfvn4udcelwt858hqsa0l32`
 
-Tips / donations (PRL):
-`prl1p62v09vuzyd8kdz9l23jaf3kph4wwx6jqcmhkkhg8lhr2qlxky8psu3zw9d`
 
 ## License
 
