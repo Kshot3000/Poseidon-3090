@@ -4,7 +4,8 @@ Status key: `queued` · `claimed` · `in progress` · `in review` · `done` · `
 
 | ID | Task | Seat | Status | Notes |
 |---|---|---|---|---|
-| POSEIDON-1 | Project website: GitHub Pages site in `site/` (scoreboard, fee transparency, honest status) + Pages workflow | Muse | done | 2026-11-26, Kyle's order; live at https://kshot3000.github.io/Poseidon-3090/ once Pages deploys |
+| POSEIDON-1 | Project website: GitHub Pages site in `site/` (scoreboard, fee transparency, honest status) + Pages workflow | Muse | done | 2026-11-26, Kyle's order; live at https://kshot3000.github.io/Poseidon-3090/ |
+| GEMINI-2 | Site v2 design: full redesign of `site/index.html` (nav, telemetry hero, rig-scaling estimator, roadmap) | Gemini | in review | Delivered by Kyle as a zip 2026-11-26; Muse audit clean (fee address exact, targets labelled, no invented rival numbers, PII clean, estimator math verified); integrated on `gemini/site-v2` with fee-mechanism wording corrected to the standard time-sliced description + kshot.tech footer link |
 | POSEIDON-0 | Repo bootstrap: README, SPEC, BENCH, council, OC + fee core, tests | Muse | done | 2026-11-26, founding commit |
 | GROK-1 | Rival sweep: current Pearl builds + published 3090 figures for OneZeroMiner, SRBMiner-Multi v3.8.4, lolMiner, PeakMiner, WildRig Multi, PearlVolt — versions, fees, claimed vs pool-accepted numbers, sources | Grok | queued | Packet: `council/feed/GROK_FEED.md` wave 1 |
 | SOL-1 | Verify pearlhash/cuPOW spec accuracy in `docs/SPEC.md`; review sm_86 kernel design (tile, launch bounds, async job switch) and flag anything that would not beat the incumbents | Sol | queued | Packet: `council/feed/SOL_FEED.md` |
