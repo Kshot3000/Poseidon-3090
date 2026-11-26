@@ -14,9 +14,10 @@ and PearlVolt on pool-accepted GH/W, measured by `docs/BENCH.md`.
   tests/QA, small tools built to spec.
 - **Gemini (free tier)** — small general one-offs only: a summary, a short
   draft, a single lookup. Nothing long, nothing load-bearing.
-- **Hermes (local seat)** — PAUSED by Kyle's order 2026-11-24 (all local work,
-  until he personally resumes her). Do not feed her tasks. Hardware benches
-  are Kyle-run until then.
+- **Hermes (local seat)** — hardware/test seat for Poseidon, resumed by Kyle
+  2026-11-26 for this project only (her machine is an i9 / RTX 3090 / 128 GB
+  rig — the exact target card). Her other local work stays paused under
+  Kyle's 2026-11-24 order unless he resumes it separately.
 - **Kyle** — owner: hardware, accounts, money/legal, final calls. All
   public-facing work is in his first-person voice, as a solo developer with
   his team behind the scenes.

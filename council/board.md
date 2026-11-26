@@ -11,10 +11,9 @@ Status key: `queued` · `claimed` · `in progress` · `in review` · `done` · `
 | CLAUDE-2 | Stratum client core: Pearl pool messages, failover, share accounting — unit-tested, following the OysterRig pattern | Muse | queued | |
 | CLAUDE-3 | OC tooling: apply/reset scripts for the 3090 profiles (Linux + Windows), from `src/poseidon3090/oc.py` | Muse | queued | |
 | GEMINI-1 | Short summary of `docs/AUDIT` material in OysterRig relevant to 3090-only design (one page max) | Gemini | queued | Small one-off, free-tier sized |
-| KYLE-1 | First hardware bench: SRBMiner v3.8.4 + OneZeroMiner baselines per `docs/BENCH.md` on the 3090 | Kyle | blocked | Needs Kyle at the rig; Hermes is paused (2026-11-24) so no seat can run this |
-| HERMES-1 | Hardware test seat for Poseidon benches | Hermes | paused | Kyle's order 2026-11-24: all Hermes local work paused until he resumes her |
+| HERMES-1 | Rig recon + first hardware benches: SRBMiner v3.8.4 + OneZeroMiner baselines per `docs/BENCH.md` on her 3090 | Hermes | queued | Kyle resumed Hermes for Poseidon on 2026-11-26; packet: `council/feed/HERMES_NEXT_FEED.md`, start prompt: `council/feed/HERMES_START_PROMPT.md` |
 
 ## Scoreboard
 - Target: ≥125 TH/s @ ≤320 W pool-side, after the 2% fee, on Kyle's OC (≥391 GH/W).
 - Verified Poseidon hashrate: **none yet — no claim.**
-- Baselines measured: none yet (KYLE-1).
+- Baselines measured: none yet (HERMES-1).
