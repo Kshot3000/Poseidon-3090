@@ -17,3 +17,11 @@ Start here: `council/feed/HERMES_START_PROMPT.md`.
    Pool/wallet specifics come from Kyle — ask, never invent.
 Acceptance: raw numbers with sources/logs attached; no Poseidon claim
 (Poseidon has no kernel yet — these are the bars it must beat).
+
+## Queued next — CLAUDE-1 compile gate (after HERMES-1)
+The kernel skeleton (PR #3, `muse/claude-1-kernel-skeleton`) is designed but
+not yet compiled — the authoring machine has no nvcc. On your rig:
+`scripts/build-kernel.sh && ./build/poseidon_selftest`. Report the full
+output via PR or a comment on PR #3: PASS lines + `SELFTEST OK` is the
+project's first COMPILED gate. A failure is just as valuable — paste it
+verbatim, do not fix the kernel yourself (that routes back to Muse).
