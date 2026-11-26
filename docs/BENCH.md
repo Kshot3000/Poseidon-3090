@@ -11,7 +11,11 @@ real RTX 3090. Nothing else counts.
 - Pool: same pool, same account/wallet, for every miner in the run.
 
 ## Run
-1. Apply the OC profile (scripts land with the OC tooling task on the board).
+1. Apply the OC profile: `scripts/oc-apply.sh --execute` (Linux) or
+   `scripts\oc-apply.ps1 -Execute` (Windows) — dry-run without the flag.
+   Set the +200 core offset manually (nvidia-settings / Afterburner);
+   the tool prints this step and never claims it was set. Reset after
+   the run with `scripts/oc-reset.sh --execute` / `oc-reset.ps1 -Execute`.
 2. Baseline: SRBMiner-Multi **v3.8.4**, pearlhash, 30+ minutes.
    Record pool-side TH/s, average watts (nvidia-smi, 5 s sampling), temps.
 3. Second baseline: OneZeroMiner (current Pearl build, version recorded).

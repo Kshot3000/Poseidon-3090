@@ -51,6 +51,17 @@ class OcProfile:
         Afterburner / NVIDIA App (documented by callers)."""
         return self.nvidia_smi_linux(device)
 
+    def reset_nvidia_smi(self, device: int = 0) -> list[str]:
+        """Commands that undo nvidia_smi_linux(): release the core and
+        memory clock locks and drop persistence mode. A power limit set by
+        the profile is NOT reset here — nvidia-smi has no 'default PL'
+        flag that is safe across cards; callers must say so out loud."""
+        return [
+            f"nvidia-smi -i {device} -rgc",
+            f"nvidia-smi -i {device} -rmc",
+            f"nvidia-smi -i {device} -pm 0",
+        ]
+
     def gh_per_w(self, ths: float, watts: float) -> float:
         return ths * 1000 / watts if watts else 0.0
 
@@ -79,6 +90,11 @@ SWEEP_3090 = [
 ]
 for _p in SWEEP_3090:
     _p.validate()
+
+# Name -> profile registry for the OC tooling (scripts/poseidon_oc.py).
+# Sweep points are bench-only and deliberately NOT applicable by name:
+# the tooling applies a named, reviewed profile or nothing.
+PROFILES = {p.name: p for p in (KYLE_3090, KYLE_3090_MEM405)}
 
 # The bar on a 3090 (public figures, Oct–Nov 2026):
 #   PeakMiner v2.5.0: 121.8 TH/s @ 348 W = 350 GH/W (v1.0.12 sweep: 126.5 @ 388 W)
