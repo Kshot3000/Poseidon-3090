@@ -48,6 +48,14 @@ never marketed.
 - Protocol: `docs/BENCH.md`. Equal windows, same pool, same card, same OC,
   raw results published either way.
 
+## Continuous improvement (Kyle's order, 2026-11-26)
+The target is a floor, not a ceiling: **higher hashrate, lower power draw,
+everything better — improved daily.** Every bench result feeds the next
+tuning step (kernel tiles, launch bounds, OC sweep points, stale-share
+waste), and the scoreboard in this spec and on the website is updated with
+each verified result. A day with a measured improvement beats a day with a
+big claim.
+
 ## Honesty rules
 - No hashrate, efficiency, or "fastest" claim without a BENCH.md run behind it.
 - Targets are always labelled targets.

@@ -39,9 +39,11 @@ testing a 405 MHz memory lock, judged pool-side on whole-rig power.
 ## Status — honest, v0.0 bootstrap (2026-11-26)
 
 - ✅ Repo founded, mission and bench protocol set, team board live ([`council/board.md`](council/board.md))
+- ✅ Miner framework: stratum core (with stale-share accounting), autotune selection, telemetry API, GPU backend interface — unit-tested
+- ✅ Project website: https://kshot3000.github.io/Poseidon-3090/
 - ✅ 3090 OC profiles + efficiency math, unit-tested (`src/poseidon3090/oc.py`)
 - 🚧 CUDA pearlhash kernel (sm_86 tensor-core GEMM + fused sparse prep): designed, not yet compiled
-- 🚧 Stratum client, job handling, telemetry: to be built to [`docs/SPEC.md`](docs/SPEC.md)
+- 🚧 Stratum networking (sockets), job loop, CLI: to be built on the framework, to [`docs/SPEC.md`](docs/SPEC.md)
 - ⛔ No hashrate claimed. No binary released. The bench decides everything.
 
 ## Quick start (core, today)

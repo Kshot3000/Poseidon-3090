@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Poseidon 3090 — Pearl mining, perfected for the RTX 3090</title>
+<meta name="description" content="Poseidon 3090 is Pearl-only mining software built from scratch for the NVIDIA RTX 3090. One coin. One card. Measured pool-side, or it doesn't count.">
+<meta property="og:title" content="Poseidon 3090">
+<meta property="og:description" content="The best Pearl mining software for Nvidia 3090 GPUs. Pure Pearl. Pure 3090.">
+<meta property="og:type" content="website">
+<style>
+  :root{
+    --abyss:#04141f; --deep:#07293d; --sea:#0b3d5c; --foam:#37d5b8; --foam-dim:#1d9e87;
+    --pearl:#f4f1e6; --pearl-dim:#c9c4b2; --gold:#e8b34b; --ink:#dcebf2; --muted:#8fb2c1;
+    --card:rgba(11,61,92,.38); --line:rgba(55,213,184,.22);
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--abyss); color:var(--ink); font-family:"Avenir Next","Segoe UI",system-ui,-apple-system,sans-serif; line-height:1.6; overflow-x:hidden}
+  a{color:var(--foam); text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 24px}
+
+  /* hero */
+  header{position:relative; padding:96px 0 72px; text-align:center;
+    background:
+      radial-gradient(900px 480px at 50% -10%, rgba(55,213,184,.20), transparent 60%),
+      radial-gradient(700px 500px at 85% 20%, rgba(11,61,92,.9), transparent 65%),
+      linear-gradient(180deg, var(--deep), var(--abyss));}
+  .trident{width:74px; height:74px; margin:0 auto 10px; filter:drop-shadow(0 0 18px rgba(232,179,75,.45))}
+  .pearl-orb{width:118px; height:118px; margin:26px auto 6px; border-radius:50%;
+    background:radial-gradient(circle at 34% 30%, #ffffff, var(--pearl) 34%, #b9ac8e 72%, #7d725a);
+    box-shadow:0 0 64px rgba(244,241,230,.35), inset -14px -18px 34px rgba(90,80,55,.45);}
+  h1{font-size:clamp(2.6rem,7vw,4.4rem); letter-spacing:.04em; font-weight:800; color:var(--pearl);
+     font-family:Georgia,"Times New Roman",serif; text-transform:uppercase}
+  h1 .n{color:var(--gold)}
+  .tag{font-size:clamp(1.05rem,2.6vw,1.35rem); color:var(--foam); margin-top:10px; font-weight:600}
+  .sub{max-width:640px; margin:16px auto 0; color:var(--muted); font-size:1.02rem}
+  .cta{margin-top:30px; display:flex; gap:14px; justify-content:center; flex-wrap:wrap}
+  .btn{display:inline-block; padding:12px 26px; border-radius:999px; font-weight:700; border:1px solid var(--foam-dim)}
+  .btn.solid{background:var(--foam); color:#03211b}
+  .btn.solid:hover{background:#5ce8cb; text-decoration:none}
+  .btn.ghost{color:var(--foam); background:transparent}
+  .btn.ghost:hover{background:rgba(55,213,184,.1); text-decoration:none}
+  .status{display:inline-block; margin-top:26px; padding:6px 16px; border:1px solid var(--line);
+    border-radius:999px; color:var(--pearl-dim); font-size:.9rem; background:rgba(4,20,31,.5)}
+  .status b{color:var(--gold)}
+
+  section{padding:64px 0 8px}
+  h2{font-family:Georgia,serif; color:var(--pearl); font-size:clamp(1.6rem,4vw,2.2rem); margin-bottom:8px}
+  .lede{color:var(--muted); max-width:720px; margin-bottom:28px}
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:18px}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px}
+  .card h3{color:var(--foam); margin-bottom:8px; font-size:1.08rem}
+  .card p{color:var(--ink); font-size:.97rem}
+
+  /* scoreboard */
+  .board{background:linear-gradient(180deg, rgba(11,61,92,.55), rgba(7,41,61,.35));
+    border:1px solid var(--line); border-radius:20px; padding:28px; overflow-x:auto}
+  table{width:100%; border-collapse:collapse; min-width:560px}
+  th,td{padding:12px 14px; text-align:left; border-bottom:1px solid rgba(143,178,193,.15)}
+  th{color:var(--muted); font-size:.85rem; text-transform:uppercase; letter-spacing:.08em}
+  td.num{font-variant-numeric:tabular-nums; white-space:nowrap}
+  tr.target td{color:var(--pearl); font-weight:700; background:rgba(232,179,75,.07)}
+  .pill{display:inline-block; padding:2px 10px; border-radius:999px; font-size:.78rem; font-weight:700}
+  .pill.t{background:rgba(232,179,75,.18); color:var(--gold)}
+  .pill.p{background:rgba(55,213,184,.15); color:var(--foam)}
+  .note{color:var(--muted); font-size:.9rem; margin-top:14px}
+
+  .fee{background:rgba(4,20,31,.6); border:1px solid var(--line); border-radius:16px; padding:24px}
+  .addr{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace; font-size:.92rem; word-break:break-all;
+    background:rgba(55,213,184,.08); border:1px dashed var(--foam-dim); border-radius:10px; padding:12px 14px; margin-top:12px}
+  .copy{margin-top:12px; background:var(--sea); color:var(--ink); border:1px solid var(--foam-dim);
+    padding:8px 18px; border-radius:999px; cursor:pointer; font-weight:600}
+  .copy:hover{background:var(--foam-dim); color:#03211b}
+
+  .steps{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:18px; counter-reset:step}
+  .step{border-left:3px solid var(--foam-dim); padding:4px 0 4px 18px}
+  .step h3{color:var(--pearl); margin-bottom:6px}
+  .step p{color:var(--muted); font-size:.95rem}
+  .done{color:var(--foam); font-weight:700} .doing{color:var(--gold); font-weight:700} .todo{color:var(--muted); font-weight:700}
+
+  footer{margin-top:72px; padding:36px 0 48px; border-top:1px solid rgba(143,178,193,.15); color:var(--muted); font-size:.93rem}
+  footer .cols{display:flex; gap:28px; flex-wrap:wrap; justify-content:space-between}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <svg class="trident" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+      <path d="M32 6v40M32 46v12M14 10v14c0 8 6 12 12 12M50 10v14c0 8-6 12-12 12M14 10l-3-4M14 10l3-4M50 10l-3-4M50 10l3-4M32 6l-3-4M32 6l3-4" stroke="#e8b34b" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <h1>Poseidon <span class="n">3090</span></h1>
+    <div class="pearl-orb" aria-hidden="true"></div>
+    <p class="tag">Pearl mining, perfected for one card.</p>
+    <p class="sub">Poseidon 3090 is mining software built from scratch for a single purpose:
+      mining <strong>Pearl (PRL)</strong> on the <strong>NVIDIA RTX 3090</strong>.
+      No multi-algo bloat. No kernels ported from other cards. Every decision serves
+      one scoreboard — pool-accepted hashrate per watt, measured in public.</p>
+    <div class="cta">
+      <a class="btn solid" href="https://github.com/Kshot3000/Poseidon-3090">View the code</a>
+      <a class="btn ghost" href="#scoreboard">See the scoreboard</a>
+    </div>
+    <div><span class="status">Status: <b>in development</b> — no binary yet, and no hashrate claimed until the bench proves it</span></div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section id="scoreboard">
+    <h2>The scoreboard</h2>
+    <p class="lede">Mining software lives or dies on pool-accepted numbers, not marketing.
+      Here is the public bar on an RTX 3090 — and the target Poseidon is built to beat.
+      Targets are labelled targets; Poseidon claims nothing until a measured run is published raw.</p>
+    <div class="board">
+      <table>
+        <tr><th>Miner</th><th>RTX 3090 pearlhash</th><th>Power</th><th>Efficiency</th><th></th></tr>
+        <tr class="target"><td>Poseidon 3090</td><td class="num">≥ 125 TH/s</td><td class="num">≤ 320 W</td><td class="num">≥ 391 GH/W</td><td><span class="pill t">Target</span></td></tr>
+        <tr><td>PeakMiner v2.5.0</td><td class="num">121.8 TH/s</td><td class="num">348 W</td><td class="num">350 GH/W</td><td><span class="pill p">Published</span></td></tr>
+        <tr><td>SRBMiner-Multi v3.8.4</td><td colspan="3">The baseline rival — every Poseidon bench runs back-to-back against it, same pool, same card, same overclock</td><td><span class="pill p">Baseline</span></td></tr>
+        <tr><td>OneZeroMiner · lolMiner · WildRig</td><td colspan="3">Rival sweep and measured baselines in progress — the full table publishes with the first bench</td><td><span class="pill p">Rivals</span></td></tr>
+      </table>
+      <p class="note">The target is set on a proven efficiency profile: core locked at 1600&nbsp;MHz with a +200&nbsp;MHz offset,
+        and GDDR6X memory floor-locked at 810&nbsp;MHz — Pearl's pearlhash is tensor-core bound, so full-clock memory
+        burns watts the math never uses. A second bench arm tests a 405&nbsp;MHz memory lock. Full protocol:
+        <a href="https://github.com/Kshot3000/Poseidon-3090/blob/main/docs/BENCH.md">docs/BENCH.md</a>.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Why another Pearl miner?</h2>
+    <p class="lede">Because every incumbent is a compromise — and a single-purpose tool doesn't have to be.</p>
+    <div class="grid">
+      <div class="card"><h3>Pure Pearl</h3><p>One coin, one algorithm: pearlhash. No algo-switching machinery, no dead code paths for coins you'll never mine on this card.</p></div>
+      <div class="card"><h3>Pure 3090</h3><p>The kernel is tuned for Ampere sm_86 from the first line — 82 SMs, tensor cores, GDDR6X behaviour — not adapted down from Blackwell or up from Turing.</p></div>
+      <div class="card"><h3>The GPU never stalls</h3><p>Proof and Merkle construction and job switches run async on CPU threads while the GPU keeps hashing. Stale shares are counted, published, and engineered down.</p></div>
+      <div class="card"><h3>Real autotune</h3><p>Per-card measured profiles, picked by efficiency with a hashrate floor — never trading 20% more power for 1% more hashrate.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Dev fee — 2%, in the open</h2>
+    <div class="fee">
+      <p>Poseidon charges a <strong>2% dev fee</strong>, the standard way miner dev fees work — the same mechanism as
+        SRBMiner, OneZeroMiner, lolMiner and WildRig: every so often the miner switches to the dev pool and mines to
+        the dev wallet for 2% of the time, then switches back to your pool and your wallet. Fee rounds are announced
+        in the log and the stats API while they run, and a round is skipped rather than ever interrupting your mining.
+        No hidden fee, ever.</p>
+      <div class="addr" id="feeAddr">prl1pvrhfx8g8dpqcj3pp9782ykf8gyff4qwhzz7mfvn4udcelwt858hqsa0l32</div>
+      <button class="copy" id="copyBtn" type="button">Copy address</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Where it stands</h2>
+    <p class="lede">Built in public, claimed only when proven — and improved daily: higher hashrate, lower power draw, everything better, one measured bench at a time.</p>
+    <div class="steps">
+      <div class="step"><h3>Framework</h3><p><span class="done">Done</span> — stratum core with stale-share accounting, autotune selection, telemetry API, OC profiles and the fee slicer, all unit-tested.</p></div>
+      <div class="step"><h3>Baselines</h3><p><span class="doing">In progress</span> — SRBMiner and OneZeroMiner measured on a real 3090, on the test rig, per the published bench protocol.</p></div>
+      <div class="step"><h3>CUDA kernel</h3><p><span class="doing">In progress</span> — sm_86 tensor-core GEMM plus the fused sparse preparation stage, designed from Pearl research, verified against a CPU oracle before any speed claim.</p></div>
+      <div class="step"><h3>First release</h3><p><span class="todo">Ahead</span> — ships only with a published back-to-back bench: Poseidon vs the incumbents, same pool, same card, raw results either way.</p></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap cols">
+    <div>Built by Kyle Cox — <a href="https://x.com/kshot9000">@kshot9000</a> · <a href="https://github.com/Kshot3000">GitHub</a> · <a href="https://kshot.tech">kshot.tech</a></div>
+    <div>Poseidon 3090 is an independent project. Pearl: <a href="https://github.com/pearl-research-labs">pearl-research-labs</a></div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('copyBtn').addEventListener('click', function () {
+    var addr = document.getElementById('feeAddr').textContent.trim();
+    var btn = this;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(addr).then(function () {
+        btn.textContent = 'Copied'; setTimeout(function(){ btn.textContent = 'Copy address'; }, 1600);
+      });
+    }
+  });
+</script>
+</body>
+</html>
