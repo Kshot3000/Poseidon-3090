@@ -65,6 +65,35 @@ __global__ void gemm_ref_kernel(const int8_t* __restrict__ A,
   C[row * shape.n + col] = acc;
 }
 
+// Tile-local jackpot reduction at the rank-group boundary (CLAUDE-9,
+// SOL-1 finding 1). The mining path must NOT materialize the full product:
+// Pearl folds the *cumulative* selected tile into a rotating 16-word
+// jackpot after every complete group of `rank` dot-product terms, and
+// only the final jackpot is hashed. This interface is that boundary: the
+// GEMM stage hands over one rank-group partial tile at a time and the
+// reducer accumulates it, XOR-reduces the cumulative tile (entries as
+// u32 bit patterns, row-major), and folds into word (group % 16) as
+// rotl13(previous word) ^ xored_tile. The host reference implementation
+// and the known-answer fixture live in src/poseidon3090/jackpot.py and
+// tests/test_jackpot.py; a device implementation must match them at
+// every group boundary, not just at the end. Full-matrix output stays
+// available through gemm_stage_run for the diagnostic path.
+// Status: INTERFACE ONLY — declared, not implemented, not compiled.
+struct JackpotReducer {
+  int32_t tile[16 * 16];  // cumulative tile, row-major, <= 256 entries
+  uint32_t words[16];     // the rotating jackpot
+  int tile_h;
+  int tile_w;
+  int groups;             // rank groups folded so far
+};
+
+// Reset a reducer for a tile_h x tile_w selected tile.
+void jackpot_init(JackpotReducer* red, int tile_h, int tile_w);
+
+// Add one rank-group partial tile (tile_h x tile_w, row-major) into the
+// cumulative tile and fold at the group boundary.
+void jackpot_add_group(JackpotReducer* red, const int32_t* partial);
+
 // Host entry point implemented in gemm_stage.cu: copies A/B to the device,
 // launches the configured kernel, copies C back. Returns 0 on success,
 // non-zero CUDA error code otherwise.
