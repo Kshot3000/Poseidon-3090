@@ -4,7 +4,7 @@ Status key: `queued` · `claimed` · `in progress` · `in review` · `done` · `
 
 | ID | Task | Seat | Status | Notes |
 |---|---|---|---|---|
-| SOL-SITE | Rebuild the Poseidon 3090 website, with target-only tools, release status, and fee transparency | Sol | claimed | Design pass on `sol/site-rebuild`. Verify responsive layout, controls, target labels, and the fee address before review. |
+| SOL-SITE | Rebuild the Poseidon 3090 website, with target-only tools, release status, and fee transparency | Sol | in review | Responsive redesign and browser checks for target math, previews, motion and the exact fee wallet. |
 | POSEIDON-1 | Project website: GitHub Pages site in `site/` (scoreboard, fee transparency, honest status) + Pages workflow | Muse | done | 2026-11-26, Kyle's order; live at https://kshot3000.github.io/Poseidon-3090/ |
 | CLAUDE-6 | Miner runtime integration: wire stratum client + fee slicer + telemetry into one runnable host loop against the `gpu.py` backend stub, with a fake-pool end-to-end test (local stratum fixture) proving job → work → share flow and the 2% fee switch | Muse | queued | Kyle's constant-improvement order 2026-11-26; builds only on merged main code, independent of PRs #3/#4 |
 | CLAUDE-7 | Bench runner: one-command BENCH.md execution — apply OC profile, launch a miner, sample power, capture the pool-side window, emit the bench record in BENCH.md format — so Hermes' rival baselines and every future Poseidon bench are reproducible | Muse | in review | Kyle's constant-improvement order 2026-11-26; must work for SRBMiner/OneZeroMiner command lines as well as Poseidon's |

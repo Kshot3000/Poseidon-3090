@@ -1,910 +1,262 @@
-<!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<!doctype html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>POSEIDON-3090 | Abyssal GPU Mining Engine for Pearl (PRL)</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            abyss: {
-              950: '#020813',
-              900: '#041224',
-              800: '#081d38',
-              700: '#0e2c52',
-            },
-            trident: {
-              cyan: '#00f0ff',
-              teal: '#00bfa6',
-              gold: '#f5c767',
-              pearl: '#f8fafc',
-              iridescent: '#e0c3fc',
-            }
-          },
-          fontFamily: {
-            mythic: ['Cinzel', 'serif'],
-            sans: ['Inter', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          },
-          animation: {
-            'float-slow': 'float 6s ease-in-out infinite',
-            'pulse-glow': 'pulseGlow 3.5s ease-in-out infinite',
-            'spin-slow': 'spin 24s linear infinite',
-          },
-          keyframes: {
-            float: {
-              '0%, 100%': { transform: 'translateY(0px)' },
-              '50%': { transform: 'translateY(-14px)' },
-            },
-            pulseGlow: {
-              '0%, 100%': { opacity: 0.75, transform: 'scale(1)' },
-              '50%': { opacity: 1, transform: 'scale(1.04)' },
-            }
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    body {
-      background-color: #020813;
-      color: #e2e8f0;
-      overflow-x: hidden;
-    }
-
-    /* Iridescent Pearl Gradient Text */
-    .pearl-text {
-      background: linear-gradient(120deg, #ffffff 0%, #bae6fd 28%, #f5d0fe 55%, #fde68a 82%, #ffffff 100%);
-      background-size: 200% auto;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: shimmer 6s linear infinite;
-    }
-
-    @keyframes shimmer {
-      to { background-position: 200% center; }
-    }
-
-    /* Glassmorphism Abyssal Cards */
-    .abyss-card {
-      background: linear-gradient(145deg, rgba(8, 29, 56, 0.68) 0%, rgba(2, 8, 19, 0.85) 100%);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid rgba(0, 240, 255, 0.16);
-      box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.8), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
-      transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
-    }
-
-    .abyss-card:hover {
-      border-color: rgba(0, 240, 255, 0.45);
-      box-shadow: 0 16px 48px -8px rgba(0, 240, 255, 0.15), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
-    }
-
-    /* Luminous Pearl Sphere */
-    .pearl-orb {
-      background: radial-gradient(circle at 32% 28%, #ffffff 0%, #e0f2fe 24%, #c4b5fd 52%, #38bdf8 78%, #0369a1 100%);
-      box-shadow:
-        0 0 35px rgba(0, 240, 255, 0.55),
-        0 0 80px rgba(192, 132, 252, 0.35),
-        inset -12px -12px 24px rgba(2, 8, 19, 0.65),
-        inset 6px 6px 16px rgba(255, 255, 255, 0.9);
-    }
-
-    /* Custom Range Sliders */
-    input[type=range] {
-      -webkit-appearance: none;
-      background: transparent;
-    }
-    input[type=range]::-webkit-slider-runnable-track {
-      height: 6px;
-      background: rgba(14, 44, 82, 0.9);
-      border-radius: 999px;
-      border: 1px solid rgba(0, 240, 255, 0.25);
-    }
-    input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      height: 18px;
-      width: 18px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #ffffff, #00f0ff);
-      box-shadow: 0 0 12px #00f0ff;
-      margin-top: -7px;
-      cursor: pointer;
-    }
-
-    /* Terminal Scanline */
-    .terminal-bg {
-      background: radial-gradient(circle at top right, rgba(0, 240, 255, 0.08), transparent 60%), #01050c;
-    }
-
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: #020813; }
-    ::-webkit-scrollbar-thumb { background: #0e2c52; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #00f0ff; }
-
-    /* v4 carry-over from the living-sea design: gold flakes + ocean floor */
-    #goldCanvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
-    .seafloor { position: relative; border-radius: 1rem; overflow: hidden; border: 1px solid rgba(0, 240, 255, 0.18); background: linear-gradient(180deg, rgba(3, 24, 38, 0.25) 0%, rgba(3, 24, 38, 0.55) 46%, #0a2e33 62%, #123b36 78%, #1a463c 100%); min-height: 240px; }
-    .seafloor-sand { position: absolute; left: 0; right: 0; bottom: 0; height: 74px; background: radial-gradient(ellipse 90% 130% at 50% 115%, #8a7a52 0%, #5d5136 42%, rgba(38, 44, 32, 0) 78%); opacity: 0.85; }
-    .pearl-glow { position: absolute; border-radius: 9999px; background: radial-gradient(circle at 34% 30%, #ffffff 0%, #eaffef 30%, #a7f3ea 62%, #00f0ff 100%); box-shadow: 0 0 14px 4px rgba(94, 234, 212, 0.55), 0 0 44px 12px rgba(0, 240, 255, 0.28); animation: pearlPulse 3.8s ease-in-out infinite; }
-    @keyframes pearlPulse { 0%, 100% { box-shadow: 0 0 12px 3px rgba(94, 234, 212, 0.45), 0 0 36px 10px rgba(0, 240, 255, 0.22); } 50% { box-shadow: 0 0 20px 7px rgba(94, 234, 212, 0.75), 0 0 60px 18px rgba(0, 240, 255, 0.4); } }
-    .oyster { position: absolute; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.45)); }
-    .oyster .oyster-pearl { animation: pearlPulse 4.4s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
-    @media (prefers-reduced-motion: reduce) { .pearl-glow, .oyster .oyster-pearl { animation: none !important; } }
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07131e">
+  <meta name="description" content="Poseidon 3090 is a Pearl (PRL) miner in development for the NVIDIA RTX 3090. Explore the performance targets, bench protocol, and rig planner.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Poseidon 3090 — Pearl mining on the RTX 3090">
+  <meta property="og:description" content="Explore the performance targets and the public bench protocol for Poseidon 3090.">
+  <meta property="og:image" content="https://kshot3000.github.io/Poseidon-3090/assets/poseidon-statue.webp">
+  <link rel="canonical" href="https://kshot3000.github.io/Poseidon-3090/">
+  <link rel="icon" href="assets/trident.png">
+  <link rel="preload" href="assets/fonts/cinzel.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css">
+  <script src="site.js" defer></script>
+  <title>Poseidon 3090 — Pearl mining on the RTX 3090</title>
 </head>
-<body class="antialiased selection:bg-trident-cyan selection:text-abyss-950">
-
-  <!-- Full-Screen Live Underwater & Bioluminescent Canvas -->
-  <canvas id="oceanCanvas" class="fixed inset-0 w-full h-full pointer-events-none z-0"></canvas>
-  <canvas id="goldCanvas" aria-hidden="true"></canvas>
-
-  <!-- Ambient Abyssal Radial Vignette -->
-  <div class="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(ellipse_at_top,_rgba(0,240,255,0.09)_0%,_rgba(2,8,19,0.55)_55%,_rgba(1,4,10,0.94)_100%)]"></div>
-
-  <!-- Navigation Header -->
-  <header class="sticky top-0 z-40 border-b border-cyan-500/15 bg-abyss-950/75 backdrop-blur-xl">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3.5 flex items-center justify-between">
-      <a href="#" class="flex items-center gap-3 group">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400/20 to-amber-400/20 border border-cyan-400/40 flex items-center justify-center shadow-[0_0_20px_rgba(0,240,255,0.25)] group-hover:scale-105 transition">
-          <!-- Trident Mini Emblem -->
-          <svg class="w-6 h-6 text-trident-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2v20" />
-            <path d="M12 2l-2 3h4l-2-3z" fill="currentColor" />
-            <path d="M5 5v4a7 7 0 0 0 14 0V5" />
-            <path d="M5 5l-1.5 2.5h3L5 5z" fill="currentColor" />
-            <path d="M19 5l-1.5 2.5h3L19 5z" fill="currentColor" />
-            <path d="M9 19h6" stroke="#f5c767" />
-          </svg>
-        </div>
-        <div>
-          <span class="font-mythic font-bold text-lg sm:text-xl tracking-wider text-white">POSEIDON<span class="text-trident-cyan">-3090</span></span>
-          <span class="hidden sm:inline-block ml-2 px-2 py-0.5 text-[10px] font-mono uppercase tracking-widest rounded-full bg-cyan-500/10 text-trident-cyan border border-cyan-400/30">Pearl Engine v3.9</span>
-        </div>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="container header-layout">
+      <a class="brand" href="#top" aria-label="Poseidon 3090, home">
+        <img src="assets/trident.png" width="30" height="30" alt="">
+        <span>POSEIDON <strong>3090</strong></span>
       </a>
-
-      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
-        <a href="#features" class="hover:text-trident-cyan transition">Trident Architecture</a>
-        <a href="#dev-fee" class="hover:text-trident-cyan transition">Dev Fee</a>
-        <a href="#ocean-floor" class="hover:text-trident-cyan transition">Ocean Floor</a>
-        <a href="#simulator" class="hover:text-trident-cyan transition">Live Rig Simulator</a>
-        <a href="#configurator" class="hover:text-trident-cyan transition">Flight-Sheet Builder</a>
-        <a href="#releases" class="hover:text-trident-cyan transition">Releases</a>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="#benchmarks">Benchmarks</a>
+        <a href="#simulator">Rig planner</a>
+        <a href="#configurator">Flight sheets</a>
+        <a href="#dev-fee">Dev fee</a>
       </nav>
-
-      <div class="flex items-center gap-3">
-        <a href="https://github.com/Kshot3000/Poseidon-3090" target="_blank" rel="noopener noreferrer"
-           class="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-mono text-slate-200 bg-abyss-800/80 border border-slate-700 hover:border-trident-cyan/60 hover:text-white transition">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
-          Kshot3000/Poseidon-3090
-        </a>
-        <a href="#releases" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-abyss-950 bg-gradient-to-r from-trident-cyan via-sky-300 to-amber-200 hover:brightness-110 shadow-[0_0_24px_rgba(0,240,255,0.45)] transition">
-          Download Miner
-        </a>
-      </div>
+      <a class="button button-quiet header-source" href="https://github.com/Kshot3000/Poseidon-3090">GitHub <span class="link-arrow" aria-hidden="true"></span></a>
     </div>
   </header>
 
-  <main class="relative z-10">
-    <!-- HERO SECTION -->
-    <section class="pt-12 pb-20 lg:pt-20 lg:pb-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <div class="grid lg:grid-cols-12 gap-12 items-center">
-        <!-- Left Copy -->
-        <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
-          <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-abyss-800/90 border border-amber-400/30 text-xs font-mono text-amber-200 shadow-lg">
-            <span class="w-2 h-2 rounded-full bg-trident-cyan animate-ping"></span>
-            <span>IN DEVELOPMENT &bull; RTX 3090 ONLY &bull; AMPERE sm_86</span>
-          </div>
-
-          <h1 class="font-mythic text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] text-white">
-            COMMAND THE <span class="text-trident-cyan drop-shadow-[0_0_18px_rgba(0,240,255,0.45)]">ABYSS.</span><br />
-            HARVEST PURE <span class="pearl-text">PEARLS.</span>
-          </h1>
-
-          <p class="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-            Forged in the deep ocean trenches for one card and one algorithm: the <strong class="text-white">NVIDIA RTX 3090</strong> mining <strong class="text-trident-cyan">Pearl (PRL)</strong>. Poseidon-3090 is a purpose-built Pearl miner — custom kernels, an efficiency-first autotuner, and nothing else in the way. Built in the open, and measured pool-side or not at all.
-          </p>
-
-          <div class="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
-            <a href="#simulator" class="px-6 py-3.5 rounded-xl font-semibold text-abyss-950 bg-gradient-to-r from-trident-cyan to-teal-300 hover:brightness-110 shadow-[0_0_30px_rgba(0,240,255,0.4)] transition flex items-center gap-2">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-              Preview the Console (Simulated)
-            </a>
-            <a href="#configurator" class="px-6 py-3.5 rounded-xl font-semibold text-white bg-abyss-800/80 border border-cyan-400/35 hover:border-trident-cyan hover:bg-abyss-700/80 transition flex items-center gap-2">
-              <svg class="w-5 h-5 text-amber-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-              Generate Flight Sheet
-            </a>
-          </div>
-
-          <!-- Live Network Metrics Strip -->
-          <div class="grid grid-cols-3 gap-3 sm:gap-5 pt-6 border-t border-cyan-500/15">
-            <div>
-              <p class="text-[11px] font-mono uppercase tracking-wider text-slate-400">3090 Target Hash</p>
-              <p class="text-xl sm:text-2xl font-mono font-bold text-trident-cyan mt-0.5" id="heroHashStat">&ge; 125 TH/s</p>
-            </div>
-            <div>
-              <p class="text-[11px] font-mono uppercase tracking-wider text-slate-400">Dev Fee</p>
-              <p class="text-xl sm:text-2xl font-mono font-bold text-amber-300 mt-0.5">2%</p>
-            </div>
-            <div>
-              <p class="text-[11px] font-mono uppercase tracking-wider text-slate-400">Hashrate Claimed</p>
-              <p class="text-xl sm:text-2xl font-mono font-bold text-emerald-400 mt-0.5">None yet</p>
-            </div>
+  <main id="main">
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="hero-scene" aria-hidden="true">
+        <img src="assets/poseidon-statue.webp" width="1920" height="1280" alt="" fetchpriority="high">
+        <div class="water-light"></div>
+      </div>
+      <canvas id="gold" aria-hidden="true"></canvas>
+      <div class="container hero-layout">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="dot" aria-hidden="true"></span> Pearl (PRL) mining · In development</p>
+          <h1 id="hero-title">Poseidon <span>3090</span></h1>
+          <p class="hero-description">A Pearl miner built for the <strong>NVIDIA RTX 3090.</strong> The goal is higher pool-accepted hashrate per watt on one card.</p>
+          <div class="actions">
+            <a class="button button-primary" href="#benchmarks">Explore the benchmarks <span class="link-arrow arrow-down" aria-hidden="true"></span></a>
+            <a class="button button-secondary" href="#simulator">Plan a rig <span class="link-arrow" aria-hidden="true"></span></a>
           </div>
         </div>
-
-        <!-- Right Visual: Poseidon digital statue -->
-        <div class="lg:col-span-5 flex justify-center">
-          <div class="relative w-80 sm:w-96">
-            <img src="assets/poseidon-statue.webp" alt="Digital statue of Poseidon on the ocean floor, golden trident in hand, oysters with glowing pearls at his feet" class="relative rounded-[1.75rem] border border-cyan-400/30 shadow-[0_0_60px_rgba(0,240,255,0.25)] w-full object-cover" />
-            <div class="absolute -bottom-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-abyss-950/90 border border-cyan-400/40 text-[11px] font-mono text-trident-cyan shadow-lg whitespace-nowrap">POOL-SIDE MEASURED &bull; OR IT DOESN'T COUNT</div>
-          </div>
-        </div>
+        <button class="motion-button" id="motion-toggle" type="button" hidden>Pause motion</button>
       </div>
     </section>
 
-    <!-- TRIDENT ARCHITECTURE / FEATURES -->
-    <section id="features" class="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <div class="text-center max-w-3xl mx-auto mb-14">
-        <p class="font-mono text-xs uppercase tracking-[0.25em] text-trident-cyan mb-2">DIVINE SILICON ENGINEERING</p>
-        <h2 class="font-mythic text-3xl sm:text-4xl font-bold text-white">Three Prongs, One Purpose</h2>
-        <p class="text-slate-400 mt-3 text-sm sm:text-base">Purpose-built CUDA kernels for the Pearl proof-of-work, written for sm_86 and nothing else — the matrix stage is being built against a CPU oracle ported from the real Pearl GPU source, so the math is verified before it is fast.</p>
-      </div>
-
-      <div class="grid md:grid-cols-3 gap-6">
-        <!-- Prong 1 -->
-        <div class="abyss-card rounded-2xl p-7 relative overflow-hidden group">
-          <div class="w-12 h-12 rounded-xl bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center text-trident-cyan mb-5 group-hover:scale-110 transition">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
-          </div>
-          <h3 class="font-mythic text-xl font-bold text-white mb-2">GDDR6X Abyssal Straps</h3>
-          <p class="text-sm text-slate-300 leading-relaxed">
-            Tuning profiles for the 3090's GDDR6X and core clocks, starting from a fixed bench profile (core lock 1600 MHz, +200 offset, 810 MHz memory floor — plus a 405 MHz memory-lock arm). Every profile is a hypothesis until a pool-side bench proves it; no strap promises numbers here.
-          </p>
+    <section class="targets" aria-labelledby="targets-title">
+      <div class="container">
+        <div class="targets-caption">
+          <h2 class="eyebrow" id="targets-title">Performance targets</h2>
+          <p>Pool-side, after the dev fee · RTX 3090</p>
         </div>
-
-        <!-- Prong 2 -->
-        <div class="abyss-card rounded-2xl p-7 relative overflow-hidden group">
-          <div class="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-400/30 flex items-center justify-center text-amber-300 mb-5 group-hover:scale-110 transition">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-          </div>
-          <h3 class="font-mythic text-xl font-bold text-white mb-2">Leviathan Thermal Guard</h3>
-          <p class="text-sm text-slate-300 leading-relaxed">
-            Core-clock locking and thermal guardrails hold the card inside its power envelope — the design target is &le; 320 W at the wall while chasing &ge; 125 TH/s. Targets, stated as targets: the bench decides what is real.
-          </p>
-        </div>
-
-        <!-- Prong 3 -->
-        <div class="abyss-card rounded-2xl p-7 relative overflow-hidden group">
-          <div class="w-12 h-12 rounded-xl bg-purple-500/15 border border-purple-400/30 flex items-center justify-center text-purple-300 mb-5 group-hover:scale-110 transition">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-          </div>
-          <h3 class="font-mythic text-xl font-bold text-white mb-2">Zero-Latency Pearl Stratum</h3>
-          <p class="text-sm text-slate-300 leading-relaxed">
-            A lean stratum client with pool failover, built to switch jobs fast and count stale shares honestly — they are reported separately in the stats, never hidden inside the accepted total.
-          </p>
-        </div>
+        <dl class="target-grid">
+          <div><dt>Accepted hashrate</dt><dd>≥125 <span>TH/s</span></dd></div>
+          <div><dt>Power draw</dt><dd>≤320 <span>W</span></dd></div>
+          <div><dt>Efficiency</dt><dd>0.391 <span>TH/s/W</span></dd></div>
+        </dl>
       </div>
     </section>
 
-    <!-- INTERACTIVE RIG SIMULATOR & LIVE CONSOLE -->
-    <section id="simulator" class="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+    <section class="container section" id="benchmarks" aria-labelledby="bench-title">
+      <div class="section-title">
         <div>
-          <p class="font-mono text-xs uppercase tracking-[0.25em] text-trident-cyan mb-2">INTERACTIVE BENCHMARK DECK</p>
-          <h2 class="font-mythic text-3xl sm:text-4xl font-bold text-white">Pearl Rig Target Simulator</h2>
+          <p class="eyebrow accent">Benchmark protocol</p>
+          <h2 id="bench-title">The RTX 3090 scoreboard</h2>
+          <p>Poseidon has no measured hashrate yet. The first comparison will use equal windows, the same card and pool, and the same clock profile.</p>
         </div>
-        <div class="flex items-center gap-2 text-xs font-mono text-emerald-400 bg-emerald-950/50 border border-emerald-500/30 px-3.5 py-2 rounded-lg">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          CUDA TELEMETRY STREAM ACTIVE
-        </div>
+        <a class="text-link" href="https://github.com/Kshot3000/Poseidon-3090/blob/main/docs/BENCH.md">Read the bench protocol <span class="link-arrow" aria-hidden="true"></span></a>
       </div>
-
-      <div class="grid lg:grid-cols-12 gap-8">
-        <!-- Controls Panel -->
-        <div class="lg:col-span-5 abyss-card rounded-2xl p-6 sm:p-7 space-y-6">
-          <div>
-            <label class="block text-xs font-mono uppercase tracking-wider text-slate-400 mb-2.5">Select GPU Architecture</label>
-            <div class="grid grid-cols-2 gap-2.5" id="gpuSelector">
-              <button type="button" data-gpu="3090" class="gpu-btn active px-3.5 py-2.5 rounded-xl text-left border border-trident-cyan bg-cyan-500/15 text-white transition">
-                <div class="font-mono font-bold text-sm">RTX 3090</div>
-                <div class="text-[11px] text-cyan-300">24GB GDDR6X &bull; Flagship</div>
-              </button>
-              
-              
-              
-            </div>
-          </div>
-
-          <!-- GPU Count Slider -->
-          <div>
-            <div class="flex justify-between text-xs font-mono mb-2">
-              <span class="text-slate-400 uppercase">Rig GPU Count</span>
-              <span class="text-trident-cyan font-bold" id="gpuCountLabel">6 GPUs</span>
-            </div>
-            <input type="range" id="gpuCountRange" min="1" max="12" value="6" class="w-full" />
-          </div>
-
-          <!-- Trident Intensity Slider -->
-          <div>
-            <div class="flex justify-between text-xs font-mono mb-2">
-              <span class="text-slate-400 uppercase">Trident Kernel Intensity</span>
-              <span class="text-amber-300 font-bold" id="intensityLabel">24 (Abyssal Overdrive)</span>
-            </div>
-            <input type="range" id="intensityRange" min="18" max="26" value="24" class="w-full" />
-          </div>
-
-          <!-- Electricity Rate Slider -->
-          <div>
-            <div class="flex justify-between text-xs font-mono mb-2">
-              <span class="text-slate-400 uppercase">Power Cost ($/kWh)</span>
-              <span class="text-slate-200 font-bold" id="powerCostLabel">$0.10 / kWh</span>
-            </div>
-            <input type="range" id="powerCostRange" min="0.04" max="0.30" step="0.01" value="0.10" class="w-full" />
-          </div>
-
-          <!-- Live Calculated Output Grid -->
-          <div class="grid grid-cols-2 gap-3 pt-2 border-t border-cyan-500/15">
-            <div class="p-3.5 rounded-xl bg-abyss-950/80 border border-cyan-500/20">
-              <span class="text-[11px] font-mono text-slate-400 block">TOTAL TARGET HASHRATE</span>
-              <span class="text-xl font-mono font-bold text-trident-cyan" id="simTotalHash">750.0 TH/s</span>
-            </div>
-            <div class="p-3.5 rounded-xl bg-abyss-950/80 border border-amber-400/20">
-              <span class="text-[11px] font-mono text-slate-400 block">TARGET EFFICIENCY</span>
-              <span class="text-xl font-mono font-bold pearl-text" id="simDailyPrl">0.391 TH/s/W</span>
-            </div>
-            <div class="p-3.5 rounded-xl bg-abyss-950/80 border border-slate-800">
-              <span class="text-[11px] font-mono text-slate-400 block">RIG WALL POWER</span>
-              <span class="text-lg font-mono font-semibold text-slate-200" id="simPowerDraw">1,710 W</span>
-            </div>
-            <div class="p-3.5 rounded-xl bg-abyss-950/80 border border-emerald-500/25">
-              <span class="text-[11px] font-mono text-slate-400 block">POWER COST / DAY</span>
-              <span class="text-lg font-mono font-bold text-emerald-400" id="simNetProfit">$4.61</span>
-            </div>
-          </div>
+      <div class="bench-grid">
+        <div class="panel scoreboard">
+          <table>
+            <caption>RTX 3090 · Pearl (PRL)</caption>
+            <thead><tr><th scope="col">Miner</th><th scope="col">Published result or status</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Poseidon 3090</th><td class="pending">Awaiting first measured run</td></tr>
+              <tr><th scope="row">PeakMiner</th><td><a class="published" href="https://github.com/peakminer/peakminer/releases/tag/v2.5.0">121.8 TH/s at 348 W <span class="link-arrow" aria-hidden="true"></span><small>Published by PeakMiner</small></a></td></tr>
+              <tr><th scope="row">SRBMiner-Multi <small>v3.8.4 baseline</small></th><td class="muted">Benchmarking</td></tr>
+              <tr><th scope="row">OneZeroMiner</th><td class="muted">Benchmarking</td></tr>
+              <tr><th scope="row">lolMiner</th><td class="muted">Benchmarking</td></tr>
+              <tr><th scope="row">WildRig Multi</th><td class="muted">Benchmarking</td></tr>
+              <tr><th scope="row">PearlVolt</th><td class="muted">Benchmarking</td></tr>
+            </tbody>
+          </table>
         </div>
-
-        <!-- Right Panel: Live Terminal STDOUT -->
-        <div class="lg:col-span-7 abyss-card rounded-2xl overflow-hidden flex flex-col border border-cyan-400/25">
-          <!-- Window Top Bar -->
-          <div class="px-4 py-3 bg-abyss-950/95 border-b border-cyan-500/20 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="w-3 h-3 rounded-full bg-rose-500/80"></span>
-              <span class="w-3 h-3 rounded-full bg-amber-400/80"></span>
-              <span class="w-3 h-3 rounded-full bg-emerald-400/80"></span>
-              <span class="ml-2 text-xs font-mono text-slate-400">poseidon-3090 &mdash; SIMULATED console preview (not a live rig)</span>
-            </div>
-            <button id="toggleTerminalBtn" type="button" class="text-[11px] font-mono px-2.5 py-1 rounded bg-cyan-500/15 text-trident-cyan border border-cyan-400/30 hover:bg-cyan-500/25 transition">
-              PAUSE STREAM
-            </button>
-          </div>
-
-          <!-- Terminal Log Body -->
-          <div id="minerTerminal" class="terminal-bg p-5 font-mono text-xs sm:text-[13px] leading-relaxed h-[395px] overflow-y-auto space-y-1.5 text-slate-300">
-            <div class="text-trident-cyan font-bold">[SIMULATION] Poseidon-3090 console preview &mdash; this stream is illustrative, generated in your browser. No miner is running.</div>
-            <div class="text-amber-300">[SIMULATION] Target profile loaded: &ge; 125 TH/s @ &le; 320 W per RTX 3090 (targets, not measurements)</div>
-            <div class="text-slate-400">[SIMULATION] Stratum preview &mdash; job flow, share flow and speeds below are simulated around the targets</div>
-          </div>
-
-          <!-- Bottom Telemetry Bar -->
-          <div class="px-5 py-3 bg-abyss-950/95 border-t border-cyan-500/20 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
-            <div class="flex items-center gap-4">
-              <span class="text-slate-400">ACCEPTED: <strong class="text-emerald-400" id="acceptedCount">0</strong></span>
-              <span class="text-slate-400">REJECTED: <strong class="text-rose-400">0</strong></span>
-            </div>
-            <div class="text-amber-300" id="vramTempDisplay">CORE: 54&deg;C &bull; VRAM JUNC: 82&deg;C &bull; FAN: 68%</div>
-          </div>
-        </div>
+        <aside class="panel bench-profile" aria-labelledby="profile-title">
+          <h3 id="profile-title">Bench profile</h3>
+          <p>Both runs use the same core settings. The second run tests a lower memory lock.</p>
+          <dl class="spec-list">
+            <div><dt>Core clock lock</dt><dd>1600 MHz</dd></div>
+            <div><dt>Core offset</dt><dd>+200 MHz</dd></div>
+            <div><dt>Memory floor lock</dt><dd>810 MHz</dd></div>
+            <div><dt>Second memory arm</dt><dd>405 MHz</dd></div>
+          </dl>
+          <p class="bench-note">Results will include accepted, rejected and stale shares, plus hashrate and power logs.</p>
+        </aside>
       </div>
     </section>
 
-    <!-- FLIGHT-SHEET & CLI CONFIGURATOR -->
-    <section id="configurator" class="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <div class="abyss-card rounded-3xl p-6 sm:p-10 border border-cyan-400/25">
-        <div class="max-w-2xl mb-8">
-          <p class="font-mono text-xs uppercase tracking-[0.25em] text-amber-300 mb-2">FLIGHT SHEET PREVIEW</p>
-          <h2 class="font-mythic text-3xl font-bold text-white">One-Click Mining Flight-Sheet Generator</h2>
-          <p class="text-slate-400 text-sm mt-2">Preview the planned launch format: configure your Pearl wallet and worker below to generate a shell script, Windows batch file, or HiveOS JSON flight sheet in the shape Poseidon 3090 will ship. The miner itself is still in development &mdash; nothing here runs yet.</p>
+    <section class="tools-section" aria-label="Rig tools">
+      <div class="container section" id="simulator">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow accent">Simulated</p>
+            <h2>Plan an RTX 3090 rig</h2>
+            <p>Scale the per-card targets to a rig and enter your electricity rate to estimate daily GPU power cost.</p>
+          </div>
         </div>
-
-        <div class="grid lg:grid-cols-12 gap-8 items-start">
-          <!-- Inputs -->
-          <div class="lg:col-span-5 space-y-4">
-            <div>
-              <label class="block text-xs font-mono uppercase text-slate-400 mb-1.5">Pearl (PRL) Wallet Address</label>
-              <input type="text" id="cfgWallet" value="" placeholder="prl1&hellip; your Pearl wallet address"
-                     class="w-full px-4 py-2.5 rounded-xl bg-abyss-950/90 border border-cyan-500/30 text-sm font-mono text-white focus:outline-none focus:border-trident-cyan" />
+        <noscript><p class="noscript">Interactive previews and copy buttons require JavaScript. You can select the fee address to copy it manually.</p></noscript>
+        <div class="tool-grid">
+          <div class="panel tool-panel">
+            <div class="panel-heading">
+              <h3>Rig projection</h3>
+              <span class="status-label">Target-based</span>
             </div>
-
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-mono uppercase text-slate-400 mb-1.5">Worker Name</label>
-                <input type="text" id="cfgWorker" value="POSEIDON_RIG_01"
-                       class="w-full px-4 py-2.5 rounded-xl bg-abyss-950/90 border border-cyan-500/30 text-sm font-mono text-white focus:outline-none focus:border-trident-cyan" />
+            <div class="rig-fields">
+              <div class="field">
+                <label for="gpu-count">RTX 3090 cards</label>
+                <div class="range-field">
+                  <input id="gpu-count" type="range" min="1" max="12" value="1">
+                  <output for="gpu-count" id="gpu-count-output">1</output>
+                </div>
               </div>
-              <div>
-                <label class="block text-xs font-mono uppercase text-slate-400 mb-1.5">Stratum Region</label>
-                <select id="cfgPool" class="w-full px-3.5 py-2.5 rounded-xl bg-abyss-950/90 border border-cyan-500/30 text-sm font-mono text-white focus:outline-none focus:border-trident-cyan">
-                  <option value="stratum+ssl://YOUR-POOL-HOST:3333">Your Pearl pool &mdash; edit the generated script</option>
-                </select>
+              <div class="field">
+                <label for="power-rate">Electricity rate · USD/kWh</label>
+                <input id="power-rate" type="number" inputmode="decimal" min="0" step="any" placeholder="e.g. 0.10">
               </div>
             </div>
+            <dl class="projection">
+              <div><dt>Target hashrate</dt><dd id="rig-hash">≥125 TH/s</dd></div>
+              <div><dt>Target GPU power</dt><dd id="rig-power">≤320 W</dd></div>
+              <div><dt>Target efficiency</dt><dd>0.391 TH/s/W</dd></div>
+              <div><dt>Daily GPU power cost</dt><dd id="rig-cost">Enter a rate</dd></div>
+            </dl>
+            <p class="fine-print">Cost assumes 24 hours at the GPU power target. Other rig components draw additional power.</p>
+          </div>
 
-            <div>
-              <label class="block text-xs font-mono uppercase text-slate-400 mb-1.5">Overclock / Memory Preset</label>
-              <select id="cfgPreset" class="w-full px-3.5 py-2.5 rounded-xl bg-abyss-950/90 border border-cyan-500/30 text-sm font-mono text-white focus:outline-none focus:border-trident-cyan">
-                <option value="--lock-cclock 1600 --coff 200 --lock-mclock 810">Bench profile &mdash; CCLK 1600 &middot; +200 &middot; MCLK 810 floor</option>
-                <option value="--lock-cclock 1600 --coff 200 --lock-mclock 405">405 MHz memory arm &mdash; CCLK 1600 &middot; +200 &middot; MCLK 405</option>
-                <option value="">Stock clocks (no OC)</option>
+          <div class="panel console-panel">
+            <div class="panel-heading">
+              <div><span class="console-status" aria-hidden="true"></span><h3>Miner console</h3></div>
+              <span class="status-label">Simulated</span>
+            </div>
+            <div class="console" id="console-output" tabindex="0" role="region" aria-label="Simulated miner console">
+              <p><span>[demo]</span> RTX 3090 selected</p>
+              <p><span>[demo]</span> Waiting for a sample job</p>
+            </div>
+            <div class="console-footer">
+              <p class="fine-print">Plays a sample job and share sequence.</p>
+              <button class="button button-quiet button-small" id="console-play" type="button">Play demo</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section class="container section flight-section" id="configurator" aria-labelledby="flight-title">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow accent">Configuration preview</p>
+            <h2 id="flight-title">Draft a flight sheet</h2>
+            <p>Try the planned pool, worker and clock settings. Inputs stay in this browser tab. Exports are text previews for the unreleased miner.</p>
+          </div>
+        </div>
+        <div class="panel flight-panel">
+          <div class="flight-fields">
+            <div class="field">
+              <label for="cfg-wallet">Your Pearl wallet</label>
+              <input id="cfg-wallet" aria-describedby="config-errors" type="text" placeholder="prl1…" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="128" pattern="prl1[0-9a-z]+">
+            </div>
+            <div class="field">
+              <label for="cfg-pool">Pool endpoint</label>
+              <input id="cfg-pool" aria-describedby="config-errors" type="text" placeholder="stratum+ssl://host:port" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="300">
+            </div>
+            <div class="field">
+              <label for="cfg-worker">Worker name</label>
+              <input id="cfg-worker" aria-describedby="config-errors" type="text" placeholder="rig-01" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="32" pattern="[A-Za-z0-9_\-]+">
+            </div>
+            <div class="field">
+              <label for="cfg-preset">Clock profile</label>
+              <select id="cfg-preset">
+                <option value="stock">Stock clocks</option>
+                <option value="bench">Bench profile · 810 MHz</option>
+                <option value="memory">Second arm · 405 MHz</option>
               </select>
             </div>
+            <p id="config-errors" class="fine-print" role="status"></p>
           </div>
-
-          <!-- Generated Output Box -->
-          <div class="lg:col-span-7 space-y-3">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <div class="flex gap-2" id="formatTabs">
-                <button type="button" data-fmt="linux" class="fmt-tab px-3.5 py-1.5 rounded-lg text-xs font-mono font-semibold bg-trident-cyan text-abyss-950">start_pearl.sh (Linux / HiveOS)</button>
-                <button type="button" data-fmt="windows" class="fmt-tab px-3.5 py-1.5 rounded-lg text-xs font-mono font-semibold bg-abyss-900 text-slate-300 border border-slate-700">start_pearl.bat (Windows)</button>
-                <button type="button" data-fmt="json" class="fmt-tab px-3.5 py-1.5 rounded-lg text-xs font-mono font-semibold bg-abyss-900 text-slate-300 border border-slate-700">config.json</button>
-              </div>
-
-              <div class="flex items-center gap-2">
-                <button type="button" id="copyConfigBtn" class="px-3.5 py-1.5 rounded-lg text-xs font-mono bg-abyss-800 text-trident-cyan border border-cyan-400/40 hover:bg-cyan-500/20 transition">
-                  Copy Command
-                </button>
-                <button type="button" id="downloadConfigBtn" class="px-3.5 py-1.5 rounded-lg text-xs font-mono bg-amber-400/20 text-amber-200 border border-amber-400/40 hover:bg-amber-400/30 transition">
-                  Download File
-                </button>
-              </div>
+          <div class="flight-preview">
+            <div class="format-picker field">
+              <label for="config-format">Preview format</label>
+              <select id="config-format">
+                <option value="json">JSON</option>
+                <option value="linux">Linux / HiveOS shell</option>
+                <option value="windows">Windows batch</option>
+              </select>
             </div>
-
-            <pre id="configOutput" class="p-5 rounded-2xl bg-abyss-950 border border-cyan-500/25 font-mono text-xs sm:text-[13px] text-cyan-100 overflow-x-auto leading-relaxed"></pre>
+            <pre tabindex="0" aria-label="Generated configuration preview"><code id="config-output">Enable JavaScript to generate a preview.</code></pre>
+            <div class="preview-actions">
+              <button class="button button-secondary button-small" id="copy-config" type="button">Copy preview</button>
+              <button class="button button-quiet button-small" id="save-config" type="button">Save preview</button>
+              <p class="action-feedback" id="config-feedback" role="status"></p>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
     </section>
 
-    <!-- DEV FEE -->
-    <section id="dev-fee" class="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <div class="abyss-card rounded-3xl p-6 sm:p-10 border border-amber-400/30">
-        <p class="font-mono text-xs uppercase tracking-[0.25em] text-amber-300 mb-2">TRANSPARENCY</p>
-        <h2 class="font-mythic text-3xl font-bold text-white">Dev Fee &mdash; 2%, In the Open</h2>
-        <p class="text-slate-300 text-sm sm:text-base mt-3 max-w-3xl leading-relaxed">Poseidon 3090 charges a 2% dev fee the standard way &mdash; the same mechanism as SRBMiner, OneZeroMiner, lolMiner and WildRig: every so often the miner switches to the dev pool and mines to the wallet below for 2% of the time, then switches back to your pool. Fee rounds are announced in the log and stats while they run, and a round is skipped rather than ever interrupting your mining. No hidden fee, ever.</p>
-        <div class="mt-5 flex items-center gap-2 rounded-xl border border-cyan-400/25 bg-abyss-950/85 p-2 pl-3.5 max-w-3xl">
-          <code id="feeAddr" class="flex-1 truncate font-mono text-xs sm:text-sm text-white select-all">prl1pvrhfx8g8dpqcj3pp9782ykf8gyff4qwhzz7mfvn4udcelwt858hqsa0l32</code>
-          <button id="copyFeeBtn" type="button" class="shrink-0 rounded-lg bg-cyan-500/15 border border-cyan-400/35 px-3.5 py-2 text-xs font-semibold text-trident-cyan hover:bg-trident-cyan hover:text-abyss-950 transition">Copy address</button>
+    <div class="container section info-grid">
+      <section class="panel info-panel fee-panel" id="dev-fee" aria-labelledby="fee-title">
+        <p class="eyebrow accent">Fee transparency</p>
+        <h2 id="fee-title">2% developer fee</h2>
+        <p>The standard time-sliced dev-pool mechanism switches to the dev pool and the wallet below for 2% of mining time, then returns to your pool. Fee rounds appear in the log and stats. If the dev pool is unreachable, the miner skips the round.</p>
+        <div class="address-box">
+          <span class="eyebrow">Fee wallet · PRL</span>
+          <code id="feeAddr" class="fee-address">prl1pvrhfx8g8dpqcj3pp9782ykf8gyff4qwhzz7mfvn4udcelwt858hqsa0l32</code>
+          <div class="actions">
+            <button class="button button-secondary button-small" id="copyFeeBtn" type="button">Copy address</button>
+            <p class="action-feedback" id="fee-feedback" role="status"></p>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+      <section class="panel info-panel release-panel" id="releases" aria-labelledby="release-title">
+        <p class="eyebrow"><span class="dot" aria-hidden="true"></span> In development</p>
+        <h2 id="release-title">No binaries yet</h2>
+        <p>Development is public on GitHub. The first hardware benchmark is still pending. Published builds will appear on the GitHub Releases page.</p>
+        <div class="actions">
+          <a class="button button-primary" href="https://github.com/Kshot3000/Poseidon-3090/releases">GitHub releases <span class="link-arrow" aria-hidden="true"></span></a>
+          <a class="text-link" href="https://github.com/Kshot3000/Poseidon-3090">Browse source <span class="link-arrow" aria-hidden="true"></span></a>
+        </div>
+      </section>
+    </div>
 
-    <!-- RELEASES -->
-    <section id="releases" class="py-16 pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <div class="text-center max-w-2xl mx-auto mb-12">
-        <p class="font-mono text-xs uppercase tracking-[0.25em] text-trident-cyan mb-2">RELEASES</p>
-        <h2 class="font-mythic text-3xl sm:text-4xl font-bold text-white">No Binaries Yet &mdash; On Purpose</h2>
-        <p class="text-slate-400 text-sm mt-2">Poseidon 3090 is in development. There are no official builds today, and anyone offering a &ldquo;Poseidon-3090&rdquo; download is not us. The first release ships only after a pool-side bench on a real RTX 3090, published on GitHub with SHA-256 checksums.</p>
+    <aside class="ocean-floor" id="ocean-floor" aria-labelledby="floor-title">
+      <div class="container floor-layout">
+        <h2 id="floor-title">The ocean floor</h2>
+        <a class="text-link" href="https://github.com/pearl-research-labs/pearl">Explore Pearl’s source <span class="link-arrow" aria-hidden="true"></span></a>
       </div>
-      <div class="grid md:grid-cols-3 gap-6">
-        <div class="abyss-card rounded-2xl p-6 flex flex-col justify-between">
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <span class="px-2.5 py-1 rounded-md text-xs font-mono bg-cyan-500/15 text-trident-cyan border border-cyan-400/30">LINUX / HIVEOS</span>
-              <span class="text-xs font-mono text-amber-300">IN DEVELOPMENT</span>
-            </div>
-            <h3 class="font-mono font-bold text-lg text-white">No release yet</h3>
-            <p class="text-xs text-slate-400 mt-2">The miner core, Pearl stratum client and efficiency-first autotuner are being built and benched in the open.</p>
-          </div>
-          <a href="https://github.com/Kshot3000/Poseidon-3090" target="_blank" rel="noopener noreferrer" class="mt-6 w-full py-2.5 px-4 rounded-xl text-center text-xs font-mono font-bold bg-abyss-800 hover:bg-trident-cyan hover:text-abyss-950 text-trident-cyan border border-cyan-400/40 transition block">FOLLOW PROGRESS ON GITHUB &rarr;</a>
-        </div>
-        <div class="abyss-card rounded-2xl p-6 flex flex-col justify-between border-amber-400/40">
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <span class="px-2.5 py-1 rounded-md text-xs font-mono bg-amber-400/15 text-amber-300 border border-amber-400/35">WINDOWS 10 / 11 x64</span>
-              <span class="text-xs font-mono text-amber-200">IN DEVELOPMENT</span>
-            </div>
-            <h3 class="font-mono font-bold text-lg text-white">No release yet</h3>
-            <p class="text-xs text-slate-400 mt-2">Windows support rides the same core; OC apply/reset scripts for the bench profiles already live in the repo.</p>
-          </div>
-          <a href="https://github.com/Kshot3000/Poseidon-3090" target="_blank" rel="noopener noreferrer" class="mt-6 w-full py-2.5 px-4 rounded-xl text-center text-xs font-mono font-bold bg-gradient-to-r from-trident-cyan to-amber-200 text-abyss-950 hover:brightness-110 transition block">FOLLOW PROGRESS ON GITHUB &rarr;</a>
-        </div>
-        <div class="abyss-card rounded-2xl p-6 flex flex-col justify-between">
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <span class="px-2.5 py-1 rounded-md text-xs font-mono bg-purple-500/15 text-purple-300 border border-purple-400/30">SOURCE &amp; DOCS</span>
-              <span class="text-xs font-mono text-slate-400">MAIN BRANCH</span>
-            </div>
-            <h3 class="font-mono font-bold text-lg text-white">Kshot3000/Poseidon-3090</h3>
-            <p class="text-xs text-slate-400 mt-2">The spec, the bench protocol (docs/BENCH.md), the council board and every pull request &mdash; the whole build, public.</p>
-          </div>
-          <a href="https://github.com/Kshot3000/Poseidon-3090" target="_blank" rel="noopener noreferrer" class="mt-6 w-full py-2.5 px-4 rounded-xl text-center text-xs font-mono font-bold bg-abyss-800 hover:bg-purple-400 hover:text-abyss-950 text-purple-200 border border-purple-400/40 transition block">VIEW SOURCE REPOSITORY &rarr;</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- OCEAN FLOOR -->
-    <section id="ocean-floor" class="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <div class="max-w-2xl mb-8">
-        <p class="font-mono text-xs uppercase tracking-[0.25em] text-trident-cyan mb-2">THE OCEAN FLOOR</p>
-        <h2 class="font-mythic text-3xl sm:text-4xl font-bold text-white">Where the Pearls Are</h2>
-        <p class="text-slate-400 text-sm sm:text-base mt-3 leading-relaxed">Every Pearl (PRL) block starts down here &mdash; in the dark, under pressure, inside an oyster. Poseidon 3090 is built to crack them open: one architecture, one algorithm, nothing else. The pearls on this floor glow because the work is the point &mdash; measured pool-side, in the open, or it doesn&rsquo;t count.</p>
-      </div>
-      <div class="seafloor" aria-hidden="true">
-        <div class="seafloor-sand"></div>
-        <div class="oyster" style="left: 6%; bottom: 26px; width: 128px;"><svg viewBox="0 0 120 92" fill="none" aria-hidden="true"><path d="M8 66 Q14 34 52 26 Q92 18 112 58 Q96 52 60 54 Q26 56 8 66Z" fill="#31505c"/><path d="M14 64 Q30 40 60 36 Q94 32 106 56 Q88 50 60 52 Q32 54 14 64Z" fill="#52707c"/><path d="M6 68 Q30 84 62 84 Q96 84 114 64 Q92 76 60 76 Q28 76 6 68Z" fill="#22333d"/><path d="M16 70 Q34 80 62 80 Q92 80 106 68 Q88 74 60 74 Q32 74 16 70Z" fill="#6d5840"/><circle class="oyster-pearl" cx="60" cy="58" r="11" fill="#f8fef9" style="filter: drop-shadow(0 0 9px rgba(94,234,212,0.95));"/></svg></div>
-        <div class="oyster" style="left: 44%; bottom: 14px; width: 168px;"><svg viewBox="0 0 120 92" fill="none" aria-hidden="true"><path d="M8 66 Q14 34 52 26 Q92 18 112 58 Q96 52 60 54 Q26 56 8 66Z" fill="#31505c"/><path d="M14 64 Q30 40 60 36 Q94 32 106 56 Q88 50 60 52 Q32 54 14 64Z" fill="#52707c"/><path d="M6 68 Q30 84 62 84 Q96 84 114 64 Q92 76 60 76 Q28 76 6 68Z" fill="#22333d"/><path d="M16 70 Q34 80 62 80 Q92 80 106 68 Q88 74 60 74 Q32 74 16 70Z" fill="#6d5840"/><circle class="oyster-pearl" cx="60" cy="58" r="11" fill="#f8fef9" style="filter: drop-shadow(0 0 9px rgba(94,234,212,0.95));"/></svg></div>
-        <div class="oyster" style="right: 7%; bottom: 30px; width: 118px;"><svg viewBox="0 0 120 92" fill="none" aria-hidden="true"><path d="M8 66 Q14 34 52 26 Q92 18 112 58 Q96 52 60 54 Q26 56 8 66Z" fill="#31505c"/><path d="M14 64 Q30 40 60 36 Q94 32 106 56 Q88 50 60 52 Q32 54 14 64Z" fill="#52707c"/><path d="M6 68 Q30 84 62 84 Q96 84 114 64 Q92 76 60 76 Q28 76 6 68Z" fill="#22333d"/><path d="M16 70 Q34 80 62 80 Q92 80 106 68 Q88 74 60 74 Q32 74 16 70Z" fill="#6d5840"/><circle class="oyster-pearl" cx="60" cy="58" r="11" fill="#f8fef9" style="filter: drop-shadow(0 0 9px rgba(94,234,212,0.95));"/></svg></div>
-        <span class="pearl-glow" style="left: 26%; bottom: 30px; width: 15px; height: 15px;"></span>
-        <span class="pearl-glow" style="left: 33%; bottom: 58px; width: 10px; height: 10px; animation-delay: 0.9s;"></span>
-        <span class="pearl-glow" style="left: 63%; bottom: 24px; width: 12px; height: 12px; animation-delay: 1.7s;"></span>
-        <span class="pearl-glow" style="left: 71%; bottom: 64px; width: 9px; height: 9px; animation-delay: 0.5s;"></span>
-        <span class="pearl-glow" style="left: 86%; bottom: 88px; width: 11px; height: 11px; animation-delay: 2.3s;"></span>
-        <span class="pearl-glow" style="left: 14%; bottom: 96px; width: 8px; height: 8px; animation-delay: 1.2s;"></span>
-      </div>
-    </section>
+    </aside>
   </main>
 
-  <!-- FOOTER -->
-  <footer class="relative z-10 border-t border-cyan-500/15 bg-abyss-950/90 py-10 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400 font-mono">
-      <div class="flex items-center gap-2">
-        <span class="text-trident-cyan font-bold">POSEIDON-3090</span>
-        <span>&bull; Forged for the Pearl (PRL) Network</span>
-      </div>
-      <div class="flex items-center gap-6">
-        <a href="https://github.com/Kshot3000/Poseidon-3090" target="_blank" rel="noopener noreferrer" class="hover:text-trident-cyan transition">GitHub</a>
-        <a href="#simulator" class="hover:text-trident-cyan transition">Telemetry</a>
-        <a href="#configurator" class="hover:text-trident-cyan transition">Flight Sheets</a>
-<a href="https://kshot.tech" target="_blank" rel="noopener noreferrer" class="hover:text-trident-cyan transition">kshot.tech</a>
-      </div>
+  <footer class="site-footer">
+    <div class="container footer-layout">
+      <a class="brand" href="#top" aria-label="Poseidon 3090, back to top">
+        <img src="assets/trident.png" width="30" height="30" alt="">
+        <span>POSEIDON <strong>3090</strong></span>
+      </a>
+      <p>Built by Kyle Cox of <a href="https://kshot.tech">kshot.tech</a></p>
+      <a class="text-link" href="https://github.com/Kshot3000/Poseidon-3090">GitHub <span class="link-arrow" aria-hidden="true"></span></a>
     </div>
   </footer>
-
-  <!-- INTERACTIVE ENGINE SCRIPTS -->
-  <script>
-    // 1. LIVE ABYSSAL OCEAN & BIOLUMINESCENT PEARL PARTICLE CANVAS
-    (function initOceanCanvas() {
-      const canvas = document.getElementById('oceanCanvas');
-      const ctx = canvas.getContext('2d');
-      let width, height;
-      let mouse = { x: -1000, y: -1000 };
-
-      function resize() {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-      }
-      window.addEventListener('resize', resize);
-      window.addEventListener('mousemove', (e) => {
-        mouse.x = e.clientX;
-        mouse.y = e.clientY;
-      });
-      resize();
-
-      // Create Rising Pearls & Bioluminescent Plankton
-      const particles = Array.from({ length: 65 }, (_, i) => ({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        r: i % 9 === 0 ? Math.random() * 4.2 + 2.8 : Math.random() * 2 + 0.6,
-        vy: -(Math.random() * 0.55 + 0.15),
-        vx: (Math.random() - 0.5) * 0.3,
-        isPearl: i % 9 === 0,
-        phase: Math.random() * Math.PI * 2
-      }));
-
-      // Underwater God-Rays
-      const rays = Array.from({ length: 5 }, (_, i) => ({
-        x: (width / 5) * i + 100,
-        width: 90 + Math.random() * 140,
-        speed: 0.0004 + Math.random() * 0.0004,
-        offset: Math.random() * 10
-      }));
-
-      function draw(time) {
-        ctx.clearRect(0, 0, width, height);
-
-        // Draw Subtle Underwater Caustic Light Rays
-        rays.forEach((ray) => {
-          const sway = Math.sin(time * ray.speed + ray.offset) * 80;
-          const grad = ctx.createLinearGradient(ray.x + sway, 0, ray.x + sway + 120, height * 0.85);
-          grad.addColorStop(0, 'rgba(0, 240, 255, 0.045)');
-          grad.addColorStop(0.6, 'rgba(56, 189, 248, 0.015)');
-          grad.addColorStop(1, 'rgba(2, 8, 19, 0)');
-          ctx.fillStyle = grad;
-          ctx.beginPath();
-          ctx.moveTo(ray.x + sway - ray.width / 2, 0);
-          ctx.lineTo(ray.x + sway + ray.width / 2, 0);
-          ctx.lineTo(ray.x + sway + ray.width * 1.4, height * 0.85);
-          ctx.lineTo(ray.x + sway - ray.width * 0.8, height * 0.85);
-          ctx.closePath();
-          ctx.fill();
-        });
-
-        // Update & Draw Rising Pearls / Particles
-        particles.forEach((p) => {
-          p.y += p.vy;
-          p.x += p.vx + Math.sin(time * 0.001 + p.phase) * 0.22;
-
-          // Gentle Repulsion near Cursor
-          const dx = p.x - mouse.x;
-          const dy = p.y - mouse.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 130) {
-            p.x += (dx / dist) * 1.2;
-            p.y += (dy / dist) * 1.2;
-          }
-
-          if (p.y < -20) {
-            p.y = height + 20;
-            p.x = Math.random() * width;
-          }
-
-          ctx.beginPath();
-          if (p.isPearl) {
-            const pearlGrad = ctx.createRadialGradient(p.x - p.r * 0.3, p.y - p.r * 0.3, 0.5, p.x, p.y, p.r * 1.8);
-            pearlGrad.addColorStop(0, '#ffffff');
-            pearlGrad.addColorStop(0.5, 'rgba(224, 242, 254, 0.85)');
-            pearlGrad.addColorStop(1, 'rgba(0, 240, 255, 0)');
-            ctx.fillStyle = pearlGrad;
-            ctx.arc(p.x, p.y, p.r * 1.8, 0, Math.PI * 2);
-          } else {
-            ctx.fillStyle = 'rgba(0, 240, 255, 0.28)';
-            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          }
-          ctx.fill();
-        });
-
-        requestAnimationFrame(draw);
-      }
-      requestAnimationFrame(draw);
-    })();
-
-    // 2. GPU SIMULATOR & PROFITABILITY CALCULATOR
-    // TARGET profile only. Poseidon 3090 is in development and has no measured
-    // hashrate yet; this simulator projects the public targets (>=125 TH/s at
-    // <=320 W per RTX 3090) so miners can size rigs and power budgets.
-    const gpuProfiles = {
-      '3090':   { name: 'RTX 3090',    baseHash: 125.0, baseWatts: 320 }
-    };
-
-    let selectedGpu = '3090';
-
-    const gpuButtons = document.querySelectorAll('.gpu-btn');
-    const gpuCountRange = document.getElementById('gpuCountRange');
-    const intensityRange = document.getElementById('intensityRange');
-    const powerCostRange = document.getElementById('powerCostRange');
-
-    function updateSimulator() {
-      const profile = gpuProfiles[selectedGpu];
-      const count = parseInt(gpuCountRange.value, 10);
-      const intensity = parseInt(intensityRange.value, 10);
-      const kwhCost = parseFloat(powerCostRange.value);
-
-      const intensityMultiplier = 1 + (intensity - 24) * 0.032;
-      const powerMultiplier = 1 + (intensity - 24) * 0.045;
-
-      const totalHash = profile.baseHash * count * intensityMultiplier;
-      const totalWatts = Math.round(profile.baseWatts * count * powerMultiplier);
-      const efficiency = totalHash / totalWatts;
-      const dailyPowerUsd = (totalWatts / 1000) * 24 * kwhCost;
-
-      document.getElementById('gpuCountLabel').textContent = `${count} GPU${count > 1 ? 's' : ''}`;
-      const modeTag = intensity >= 25 ? 'Poseidon Wrath' : intensity >= 23 ? 'Abyssal Overdrive' : 'Tidal Eco';
-      document.getElementById('intensityLabel').textContent = `${intensity} (${modeTag})`;
-      document.getElementById('powerCostLabel').textContent = `$${kwhCost.toFixed(2)} / kWh`;
-
-      document.getElementById('simTotalHash').textContent = `${totalHash.toFixed(1)} TH/s`;
-      document.getElementById('simDailyPrl').textContent = `${efficiency.toFixed(3)} TH/s/W`;
-      document.getElementById('simPowerDraw').textContent = `${totalWatts.toLocaleString()} W`;
-
-      const profitEl = document.getElementById('simNetProfit');
-      profitEl.textContent = `$${dailyPowerUsd.toFixed(2)}`;
-      profitEl.className = 'text-lg font-mono font-bold text-emerald-400';
-
-      document.getElementById('vramTempDisplay').innerHTML = `SIMULATED &bull; TARGET ENVELOPE: &le; ${profile.baseWatts} W / CARD &bull; RTX 3090 ONLY`;
-    }
-
-    gpuButtons.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        gpuButtons.forEach((b) => {
-          b.classList.remove('active', 'border-trident-cyan', 'bg-cyan-500/15', 'text-white');
-          b.classList.add('border-slate-700/80', 'bg-abyss-900/60', 'text-slate-300');
-        });
-        btn.classList.add('active', 'border-trident-cyan', 'bg-cyan-500/15', 'text-white');
-        btn.classList.remove('border-slate-700/80', 'bg-abyss-900/60', 'text-slate-300');
-        selectedGpu = btn.dataset.gpu;
-        updateSimulator();
-      });
-    });
-
-    [gpuCountRange, intensityRange, powerCostRange].forEach((el) => el.addEventListener('input', updateSimulator));
-    updateSimulator();
-
-    // 3. LIVE MINER STDOUT TERMINAL STREAM
-    let terminalPaused = false;
-    let acceptedShares = 0;
-    const terminalEl = document.getElementById('minerTerminal');
-    const acceptedEl = document.getElementById('acceptedCount');
-    const toggleTermBtn = document.getElementById('toggleTerminalBtn');
-
-    toggleTermBtn.addEventListener('click', () => {
-      terminalPaused = !terminalPaused;
-      toggleTermBtn.textContent = terminalPaused ? 'RESUME STREAM' : 'PAUSE STREAM';
-    });
-
-    function appendLogLine() {
-      if (terminalPaused) return;
-      const now = new Date();
-      const ts = now.toTimeString().split(' ')[0];
-      const profile = gpuProfiles[selectedGpu];
-      const count = parseInt(gpuCountRange.value, 10);
-      const jitter = (Math.random() - 0.5) * 1.4;
-      const perCard = (profile.baseHash + jitter).toFixed(2);
-      const gpuIdx = Math.floor(Math.random() * count);
-      const latency = Math.floor(11 + Math.random() * 9);
-
-      const line = document.createElement('div');
-      const roll = Math.random();
-
-      if (roll < 0.58) {
-        acceptedShares++;
-        acceptedEl.textContent = acceptedShares.toLocaleString();
-        line.innerHTML = `<span class="text-slate-500">[${ts}]</span> <span class="text-emerald-400 font-semibold">[PEARL-SHARE]</span> GPU#${gpuIdx} (${profile.name}) found valid Pearl share! <span class="text-cyan-300">(${latency}ms)</span>`;
-      } else if (roll < 0.88) {
-        const total = (parseFloat(perCard) * count).toFixed(2);
-        line.innerHTML = `<span class="text-slate-500">[${ts}]</span> <span class="text-trident-cyan">[SPEED]</span> Total: <strong class="text-white">${total} TH/s</strong> | Avg: ${perCard} TH/s per ${profile.name} | Eff: ${(perCard / profile.baseWatts).toFixed(3)} TH/s/W (simulated)`;
-      } else {
-        const jobHex = Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
-        line.innerHTML = `<span class="text-slate-500">[${ts}]</span> <span class="text-amber-300">[NEW-EPOCH]</span> Stratum job <span class="text-purple-300">#0x${jobHex}</span> received from pool (simulated)`;
-      }
-
-      terminalEl.appendChild(line);
-      while (terminalEl.children.length > 26) {
-        terminalEl.removeChild(terminalEl.firstChild);
-      }
-      terminalEl.scrollTop = terminalEl.scrollHeight;
-    }
-
-    setInterval(appendLogLine, 1900);
-
-    // 4. FLIGHT-SHEET & CLI GENERATOR
-    let activeFormat = 'linux';
-    const cfgWallet = document.getElementById('cfgWallet');
-    const cfgWorker = document.getElementById('cfgWorker');
-    const cfgPool = document.getElementById('cfgPool');
-    const cfgPreset = document.getElementById('cfgPreset');
-    const configOutput = document.getElementById('configOutput');
-
-    function renderConfig() {
-      const wallet = cfgWallet.value.trim().replace(/\s+/g, '') || 'YOUR_PEARL_WALLET';
-      const worker = cfgWorker.value.trim() || 'POSEIDON_RIG_01';
-      const pool = cfgPool.value;
-      const preset = cfgPreset.value;
-
-      if (activeFormat === 'linux') {
-        configOutput.textContent =
-`#!/usr/bin/env bash
-# Poseidon-3090 Pearl (PRL) Launch Script — PREVIEW generated by the project website; the miner is in development
-export GPU_MAX_ALLOC_PERCENT=100
-export CUDA_DEVICE_ORDER=PCI_BUS_ID
-
-./poseidon-3090 \
-  --algo pearl-hash \
-  --pool ${pool} \
-  --user ${wallet}.${worker} \
-  ${preset} \
-  --api-bind 0.0.0.0:4068`;
-      } else if (activeFormat === 'windows') {
-        configOutput.textContent =
-`@echo off
-title POSEIDON-3090 PEARL MINER - ${worker}
-set GPU_MAX_ALLOC_PERCENT=100
-
-poseidon-3090.exe ^
-  --algo pearl-hash ^
-  --pool ${pool} ^
-  --user ${wallet}.${worker} ^
-  ${preset} ^
-  --api-bind 127.0.0.1:4068
-pause`;
-      } else {
-        configOutput.textContent = JSON.stringify({
-          miner: "poseidon-3090",
-          version: "3.9.2",
-          algorithm: "pearl-hash",
-          pools: [
-            {
-              url: pool,
-              user: `${wallet}.${worker}`,
-              pass: "x",
-              tls: pool.startsWith("stratum+ssl")
-            }
-          ],
-          tuning: preset,
-          telemetry_api: "0.0.0.0:4068"
-        }, null, 2);
-      }
-    }
-
-    document.querySelectorAll('.fmt-tab').forEach((tab) => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.fmt-tab').forEach((t) => {
-          t.className = 'fmt-tab px-3.5 py-1.5 rounded-lg text-xs font-mono font-semibold bg-abyss-900 text-slate-300 border border-slate-700';
-        });
-        tab.className = 'fmt-tab px-3.5 py-1.5 rounded-lg text-xs font-mono font-semibold bg-trident-cyan text-abyss-950';
-        activeFormat = tab.dataset.fmt;
-        renderConfig();
-      });
-    });
-
-    [cfgWallet, cfgWorker, cfgPool, cfgPreset].forEach((el) => el.addEventListener('input', renderConfig));
-    renderConfig();
-
-    // Copy & Download Actions
-    document.getElementById('copyConfigBtn').addEventListener('click', (e) => {
-      navigator.clipboard.writeText(configOutput.textContent);
-      const btn = e.currentTarget;
-      const orig = btn.textContent;
-      btn.textContent = 'Copied!';
-      setTimeout(() => { btn.textContent = orig; }, 1600);
-    });
-
-    document.getElementById('downloadConfigBtn').addEventListener('click', () => {
-      const filenames = { linux: 'start_pearl.sh', windows: 'start_pearl.bat', json: 'config.json' };
-      const blob = new Blob([configOutput.textContent], { type: 'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filenames[activeFormat];
-      a.click();
-      URL.revokeObjectURL(url);
-    });
-  </script>
-
-  <script>
-    (function () {
-      var btn = document.getElementById('copyFeeBtn');
-      var addr = document.getElementById('feeAddr');
-      if (btn && addr) {
-        btn.addEventListener('click', function () {
-          var text = addr.textContent.trim();
-          function done() { btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = 'Copy address'; }, 1600); }
-          if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(done).catch(done); } else { done(); }
-        });
-      }
-      var canvas = document.getElementById('goldCanvas');
-      if (!canvas || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      var ctx = canvas.getContext('2d');
-      var w, h, flakes;
-      function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
-      function make() {
-        var n = Math.min(90, Math.floor(window.innerWidth / 16));
-        flakes = [];
-        for (var i = 0; i < n; i++) flakes.push({ x: Math.random() * w, y: Math.random() * h, r: 0.8 + Math.random() * 2.1, vy: 0.12 + Math.random() * 0.35, vx: -0.08 + Math.random() * 0.16, ph: Math.random() * Math.PI * 2, ps: 0.008 + Math.random() * 0.02 });
-      }
-      function tick() {
-        ctx.clearRect(0, 0, w, h);
-        for (var i = 0; i < flakes.length; i++) {
-          var f = flakes[i];
-          f.y += f.vy; f.x += f.vx + Math.sin(f.ph) * 0.12; f.ph += f.ps;
-          if (f.y > h + 6) { f.y = -6; f.x = Math.random() * w; }
-          if (f.x < -6) f.x = w + 6; if (f.x > w + 6) f.x = -6;
-          var a = 0.25 + 0.55 * (0.5 + 0.5 * Math.sin(f.ph * 2));
-          ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(232, 179, 75, ' + a.toFixed(3) + ')';
-          ctx.shadowColor = 'rgba(232, 179, 75, 0.8)'; ctx.shadowBlur = 6; ctx.fill(); ctx.shadowBlur = 0;
-        }
-        requestAnimationFrame(tick);
-      }
-      resize(); make(); tick();
-      window.addEventListener('resize', function () { resize(); make(); });
-    })();
-  </script>
 </body>
 </html>
